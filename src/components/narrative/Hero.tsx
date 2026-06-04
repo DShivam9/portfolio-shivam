@@ -24,30 +24,51 @@ export default function Hero() {
       { opacity: 1, letterSpacing: "0.4em", duration: 1.2, ease: "power2.out" }
     );
 
-    // Phase 1: "Crafting" — each character sweeps up from below with blur
+    // Phase 1: "Crafting" — each character sweeps up from below
+    // Blur resolves quickly; position/opacity/rotation animate cinematically
     entranceTl.fromTo(".hero-char-1",
-      { y: 80, opacity: 0, filter: "blur(12px)", rotationX: -40 },
+      { filter: "blur(4px)" },
       { 
-        y: 0, opacity: 1, filter: "blur(0px)", rotationX: 0,
-        duration: 0.8, 
+        filter: "blur(0px)",
+        duration: 0.35, 
         stagger: { each: 0.05, from: "start" },
-        ease: "power3.out",
+        ease: "power2.out",
         clearProps: "filter"
       },
       "-=0.6"
     );
-
-    // Phase 2: "Experiences." — delayed italic wave, slightly different character
-    entranceTl.fromTo(".hero-char-2",
-      { y: 60, opacity: 0, filter: "blur(8px)", scaleY: 0.8 },
+    entranceTl.fromTo(".hero-char-1",
+      { y: 80, opacity: 0, rotationX: -40 },
       { 
-        y: 0, opacity: 1, filter: "blur(0px)", scaleY: 1,
-        duration: 0.7,
+        y: 0, opacity: 1, rotationX: 0,
+        duration: 0.8, 
+        stagger: { each: 0.05, from: "start" },
+        ease: "power3.out",
+      },
+      "<" // Start at same time as the blur tween above
+    );
+
+    // Phase 2: "Experiences." — delayed italic wave
+    entranceTl.fromTo(".hero-char-2",
+      { filter: "blur(3px)" },
+      { 
+        filter: "blur(0px)",
+        duration: 0.3,
         stagger: { each: 0.04, from: "start" },
-        ease: "back.out(1.2)",
+        ease: "power2.out",
         clearProps: "filter"
       },
       "-=0.3"
+    );
+    entranceTl.fromTo(".hero-char-2",
+      { y: 60, opacity: 0, scaleY: 0.8 },
+      { 
+        y: 0, opacity: 1, scaleY: 1,
+        duration: 0.7,
+        stagger: { each: 0.04, from: "start" },
+        ease: "back.out(1.2)",
+      },
+      "<" // Start at same time as the blur tween above
     );
 
     // Phase 3: Persistent breathing glow on "Experiences." — text feels alive
@@ -143,7 +164,9 @@ export default function Hero() {
     }, 1.8);
 
     return () => {
-      ScrollTrigger.getAll().forEach(t => t.kill());
+      entranceTl.kill();
+      tl.scrollTrigger?.kill();
+      tl.kill();
     };
   }, [setProgress]);
 
@@ -154,7 +177,6 @@ export default function Hero() {
       className="relative w-full h-[300vh]"
     >
       <div ref={wrapperRef} className="sticky top-0 h-screen w-full flex flex-col items-center justify-center px-6 overflow-hidden">
-        
         {/* INVISIBLE ANCHOR FOR 3D MODEL TRACKING */}
         <div id="bird-anchor" className="absolute top-[45%] left-1/2 -translate-x-1/2 w-4 h-4 pointer-events-none" />
 
@@ -172,14 +194,14 @@ export default function Hero() {
               <h1 className="text-hero text-text-primary tracking-tight leading-[0.9]">
                 <span className="word-out inline-block mr-4">
                   {"Crafting".split("").map((ch, i) => (
-                    <span key={i} className="hero-char-1 inline-block" style={{ willChange: 'transform, opacity' }}>
+                    <span key={i} className="hero-char-1 inline-block" style={{ willChange: 'transform, opacity, filter' }}>
                       {ch}
                     </span>
                   ))}
                 </span><br />
                 <span className="word-out inline-block text-text-secondary italic">
                   {"Experiences.".split("").map((ch, i) => (
-                    <span key={i} className="hero-char-2 inline-block" style={{ willChange: 'transform, opacity' }}>
+                    <span key={i} className="hero-char-2 inline-block" style={{ willChange: 'transform, opacity, filter' }}>
                       {ch}
                     </span>
                   ))}

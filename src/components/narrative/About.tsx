@@ -17,13 +17,33 @@ export default function About() {
   useGSAP(() => {
     if (!containerRef.current) return;
 
-    // ── Report scroll progress for the 3D katana ──
+    // ── Report scroll progress for 3D lighting system ──
     ScrollTrigger.create({
       trigger: containerRef.current,
       start: "top bottom",
       end: "bottom top",
       scrub: true,
       onUpdate: (self) => setProgress("about", self.progress),
+    });
+
+    // ── Scroll-driven image parallax effect ──
+    const parallaxWrappers = containerRef.current.querySelectorAll(".photo-card-img-wrap");
+    parallaxWrappers.forEach((wrapper) => {
+      const card = wrapper.closest(".photo-card-container");
+      if (!card) return;
+      gsap.fromTo(wrapper,
+        { yPercent: -6 },
+        {
+          yPercent: 6,
+          ease: "none",
+          scrollTrigger: {
+            trigger: card,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+          }
+        }
+      );
     });
 
     // ── Scroll-driven line-by-line reveal for each paragraph block ──
@@ -76,11 +96,10 @@ export default function About() {
       if (lines.length > 0) {
         tl.fromTo(
           lines,
-          { opacity: 0, y: 18, filter: "blur(4px)" },
+          { opacity: 0, y: 18 },
           {
             opacity: 1,
             y: 0,
-            filter: "blur(0px)",
             stagger: 0.12,
             duration: 0.18,
             ease: "none",
@@ -134,27 +153,29 @@ export default function About() {
             </div>
           </div>
           {/* Photo Card */}
-          <div className="reveal-element relative shrink-0 group rounded-md overflow-hidden bg-[#020202]" style={{ width: '320px', height: '420px', opacity: 0 }}>
-            <div className="absolute inset-0 rounded-md shadow-[0_0_50px_rgba(212,168,83,0.1)] group-hover:shadow-[0_0_80px_rgba(212,168,83,0.25)] transition-shadow duration-[2s]" />
-            <Image 
-              src="/about/trip_photo_1.jpeg" 
-              alt="Shivam Diwan" 
-              fill 
-              className="object-cover transition-all duration-[2s] ease-out brightness-[0.4] contrast-[1.15] grayscale-[40%] group-hover:brightness-[1.05] group-hover:contrast-[1.1] group-hover:grayscale-0 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.75)_100%)] pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-b from-accent/50 via-accent/10 to-transparent mix-blend-overlay -translate-y-full opacity-0 transition-all duration-[2s] ease-out group-hover:translate-y-[-10%] group-hover:opacity-100 pointer-events-none" />
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMSkiLz48L3N2Zz4=')] mix-blend-overlay opacity-50 pointer-events-none" />
+          <div className="photo-card-container reveal-element relative shrink-0 group rounded-md overflow-hidden bg-[#020202]" style={{ width: '100%', maxWidth: '320px', aspectRatio: '320/420', opacity: 0 }}>
+            <div className="photo-card-img-wrap absolute inset-x-0" style={{ top: '-6%', bottom: '-6%', willChange: 'transform' }}>
+              <Image 
+                src="/about/trip_photo_1.jpeg" 
+                alt="Shivam Diwan" 
+                fill 
+                className="object-cover"
+              />
+            </div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.75)_100%)] pointer-events-none z-20" />
+            <div className="photo-card-overlay absolute inset-0 bg-gradient-to-b from-accent/50 via-accent/10 to-transparent mix-blend-overlay pointer-events-none z-20" />
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMSkiLz48L3N2Zz4=')] mix-blend-overlay opacity-50 pointer-events-none z-20" />
           </div>
         </div>
 
-        {/* ── Para 2: RIGHT text ── */}
-        <div className="lore-block self-stretch flex flex-col-reverse md:flex-row items-center gap-8 md:gap-16" style={{ marginBottom: '10rem', paddingRight: '5%', justifyContent: 'flex-end' }}>
-          <div style={{ maxWidth: '650px' }}>
+        {/* ── Para 2 + Photo: LEFT photo, RIGHT text ── */}
+        <div className="lore-block self-stretch flex flex-col md:flex-row-reverse items-center gap-8 md:gap-16" style={{ marginBottom: '10rem', paddingRight: '5%' }}>
+          {/* Text */}
+          <div style={{ flex: '1 1 0', minWidth: 0 }}>
             <span className="section-label block font-mono uppercase md:text-right" style={{ fontSize: '0.7rem', letterSpacing: '0.3em', color: 'var(--color-accent)', opacity: 0, marginBottom: '1.5rem' }}>
               02 — Craft
             </span>
-            <div className="font-light text-text-secondary" style={{ fontSize: 'clamp(1.05rem, 1.8vw, 1.5rem)', lineHeight: 1.85 }}>
+            <div className="font-light text-text-secondary md:text-right" style={{ fontSize: 'clamp(1.05rem, 1.8vw, 1.5rem)', lineHeight: 1.85, marginLeft: 'auto', maxWidth: '650px' }}>
               <span className="reveal-line block" style={{ opacity: 0 }}>My journey began with a deep fascination for 3D realms and interactive mythos.</span>
               <span className="reveal-line block" style={{ opacity: 0 }}>Over the years, I have honed the craft of bridging rigorous technical architecture</span>
               <span className="reveal-line block" style={{ opacity: 0 }}>
@@ -162,6 +183,20 @@ export default function About() {
                 <span className="font-serif italic text-text-primary">boundary-pushing, magical design</span>.
               </span>
             </div>
+          </div>
+          {/* Photo Card */}
+          <div className="photo-card-container reveal-element relative shrink-0 group rounded-md overflow-hidden bg-[#020202]" style={{ width: '100%', maxWidth: '440px', aspectRatio: '440/248', opacity: 0 }}>
+            <div className="photo-card-img-wrap absolute inset-x-0" style={{ top: '-6%', bottom: '-6%', willChange: 'transform' }}>
+              <Image 
+                src="/about/WhatsApp Image 2026-06-04 at 10.16.29 PM.jpeg" 
+                alt="Shivam Diwan - Craft" 
+                fill 
+                className="object-cover"
+              />
+            </div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.75)_100%)] pointer-events-none z-20" />
+            <div className="photo-card-overlay absolute inset-0 bg-gradient-to-b from-accent/50 via-accent/10 to-transparent mix-blend-overlay pointer-events-none z-20" />
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMSkiLz48L3N2Zz4=')] mix-blend-overlay opacity-50 pointer-events-none z-20" />
           </div>
         </div>
 
@@ -172,28 +207,44 @@ export default function About() {
           </div>
         </div>
 
-        {/* ── Para 3: LEFT text ── */}
+        {/* ── Para 3 + Photo: LEFT text, RIGHT photo ── */}
         <div className="lore-block self-stretch flex flex-col md:flex-row items-center gap-8 md:gap-16" style={{ marginBottom: '10rem', paddingLeft: '8%' }}>
-          <div style={{ maxWidth: '700px' }}>
+          {/* Text */}
+          <div style={{ flex: '1 1 0', minWidth: 0 }}>
             <span className="section-label block font-mono uppercase" style={{ fontSize: '0.7rem', letterSpacing: '0.3em', color: 'var(--color-accent)', opacity: 0, marginBottom: '1.5rem' }}>
               03 — Method
             </span>
-            <div className="font-light text-text-secondary" style={{ fontSize: 'clamp(1.05rem, 1.8vw, 1.5rem)', lineHeight: 1.85 }}>
+            <div className="font-light text-text-secondary" style={{ fontSize: 'clamp(1.05rem, 1.8vw, 1.5rem)', lineHeight: 1.85, maxWidth: '700px' }}>
               <span className="reveal-line block" style={{ opacity: 0 }}>Whether orchestrating complex physics in WebGL or ensuring an application</span>
               <span className="reveal-line block" style={{ opacity: 0 }}>scales flawlessly, my approach is rooted in absolute precision.</span>
               <span className="reveal-line block" style={{ opacity: 0 }}>I believe that true digital elegance emerges only from a deep</span>
               <span className="reveal-line block" style={{ opacity: 0 }}>understanding of the underlying arcane systems.</span>
             </div>
           </div>
+          {/* Photo Card */}
+          <div className="photo-card-container reveal-element relative shrink-0 group rounded-md overflow-hidden bg-[#020202]" style={{ width: '100%', maxWidth: '460px', aspectRatio: '460/215', opacity: 0 }}>
+            <div className="photo-card-img-wrap absolute inset-x-0" style={{ top: '-6%', bottom: '-6%', willChange: 'transform' }}>
+              <Image 
+                src="/about/WhatsApp Image 2026-06-04 at 10.16.29 PM (1).jpeg" 
+                alt="Shivam Diwan - Method" 
+                fill 
+                className="object-cover"
+              />
+            </div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.75)_100%)] pointer-events-none z-20" />
+            <div className="photo-card-overlay absolute inset-0 bg-gradient-to-b from-accent/50 via-accent/10 to-transparent mix-blend-overlay pointer-events-none z-20" />
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMSkiLz48L3N2Zz4=')] mix-blend-overlay opacity-50 pointer-events-none z-20" />
+          </div>
         </div>
 
-        {/* ── Para 4: RIGHT text ── */}
-        <div className="lore-block self-stretch flex flex-col-reverse md:flex-row items-center gap-8 md:gap-16" style={{ paddingRight: '5%', justifyContent: 'flex-end' }}>
-          <div style={{ maxWidth: '650px' }}>
+        {/* ── Para 4 + Photo: LEFT photo, RIGHT text ── */}
+        <div className="lore-block self-stretch flex flex-col md:flex-row-reverse items-center gap-8 md:gap-16" style={{ paddingRight: '5%' }}>
+          {/* Text */}
+          <div style={{ flex: '1 1 0', minWidth: 0 }}>
             <span className="section-label block font-mono uppercase md:text-right" style={{ fontSize: '0.7rem', letterSpacing: '0.3em', color: 'var(--color-accent)', opacity: 0, marginBottom: '1.5rem' }}>
               04 — Vision
             </span>
-            <div className="font-light text-text-secondary" style={{ fontSize: 'clamp(1.15rem, 2vw, 1.75rem)', lineHeight: 1.85 }}>
+            <div className="font-light text-text-secondary md:text-right" style={{ fontSize: 'clamp(1.15rem, 2vw, 1.75rem)', lineHeight: 1.85, marginLeft: 'auto', maxWidth: '650px' }}>
               <span className="reveal-line block" style={{ opacity: 0 }}>Currently, I am exploring the intersection of spatial computing</span>
               <span className="reveal-line block" style={{ opacity: 0 }}>and the open web, forging interfaces that feel</span>
               <span className="reveal-line block" style={{ opacity: 0 }}>
@@ -204,6 +255,20 @@ export default function About() {
                 </span>
               </span>
             </div>
+          </div>
+          {/* Photo Card */}
+          <div className="photo-card-container reveal-element relative shrink-0 group rounded-md overflow-hidden bg-[#020202]" style={{ width: '100%', maxWidth: '350px', aspectRatio: '350/350', opacity: 0 }}>
+            <div className="photo-card-img-wrap absolute inset-x-0" style={{ top: '-6%', bottom: '-6%', willChange: 'transform' }}>
+              <Image 
+                src="/about/WhatsApp Image 2026-06-04 at 10.16.29 PM (2).jpeg" 
+                alt="Shivam Diwan - Vision" 
+                fill 
+                className="object-cover"
+              />
+            </div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.75)_100%)] pointer-events-none z-20" />
+            <div className="photo-card-overlay absolute inset-0 bg-gradient-to-b from-accent/50 via-accent/10 to-transparent mix-blend-overlay pointer-events-none z-20" />
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMSkiLz48L3N2Zz4=')] mix-blend-overlay opacity-50 pointer-events-none z-20" />
           </div>
         </div>
 

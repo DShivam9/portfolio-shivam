@@ -28,14 +28,15 @@ export default function Navbar() {
 
     // Logo letters cascade in
     const logoLetters = lettersRef.current.filter(Boolean) as HTMLSpanElement[];
-    gsap.set(logoLetters, { y: 30, opacity: 0, filter: "blur(6px)" });
+    gsap.set(logoLetters, { y: 30, opacity: 0, filter: "blur(3px)" });
     navTl.to(logoLetters, {
       y: 0,
       opacity: 1,
       filter: "blur(0px)",
       duration: 0.6,
       stagger: { each: 0.04, from: "start" },
-      ease: "power3.out"
+      ease: "power3.out",
+      clearProps: "filter"
     }, "-=0.1");
 
     // Nav link letters cascade in
@@ -177,7 +178,7 @@ export default function Navbar() {
               key={i} 
               ref={(el) => { lettersRef.current[i] = el; }}
               className={`inline-block font-serif italic text-white text-xl md:text-2xl leading-none transition-none ${char === " " ? "w-2" : ""}`}
-              style={{ willChange: 'transform' }}
+              style={{ willChange: 'transform, opacity, filter' }}
             >
               {char === " " ? "\u00A0" : char}
             </span>

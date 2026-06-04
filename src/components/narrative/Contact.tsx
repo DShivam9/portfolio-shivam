@@ -1,61 +1,371 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
+import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import FooterShaderBg from "@/components/ui/FooterShaderBg";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Contact() {
-  const containerRef = useRef<HTMLElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
+  useGSAP(() => {
+    if (!containerRef.current) return;
 
-    if (containerRef.current) {
-      gsap.fromTo(textRef.current,
-        { opacity: 0, y: 30 },
+    // ── Scrub-driven editorial reveal ──
+    // Matches the site's signature blur+y scroll-scrub from About/Hero
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: "top 75%",
+        end: "top 10%",
+        scrub: 1.5,
+      },
+    });
+
+    // Tagline row
+    const tagline = containerRef.current.querySelector(".ft-tagline");
+    if (tagline) {
+      tl.fromTo(tagline,
+        { opacity: 0, y: 40, filter: "blur(5px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.2, ease: "none", clearProps: "filter" },
+        0
+      );
+    }
+
+    // Giant name characters — cinematic blur-resolve (matches site's signature animation)
+    const nameChars = containerRef.current.querySelectorAll(".ft-char");
+    if (nameChars.length > 0) {
+      // Blur resolves first
+      tl.fromTo(nameChars,
+        { filter: "blur(12px)" },
         {
-          opacity: 1, y: 0, duration: 1, ease: "power2.out",
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top 80%",
-          }
+          filter: "blur(0px)",
+          stagger: 0.012,
+          duration: 0.2,
+          ease: "none",
+          clearProps: "filter",
+        },
+        0.04
+      );
+      // Opacity + scale animate simultaneously
+      tl.fromTo(nameChars,
+        { opacity: 0, scale: 0.88 },
+        {
+          opacity: 1, scale: 1,
+          stagger: 0.012,
+          duration: 0.3,
+          ease: "none",
+        },
+        0.04
+      );
+    }
+
+    // Hairline dividers expand
+    const dividers = containerRef.current.querySelectorAll(".ft-line");
+    dividers.forEach((div) => {
+      tl.fromTo(div,
+        { scaleX: 0 },
+        { scaleX: 1, duration: 0.25, ease: "none" },
+        0.12
+      );
+    });
+
+    // Info grid columns — staggered
+    const infoCols = containerRef.current.querySelectorAll(".ft-col");
+    if (infoCols.length > 0) {
+      tl.fromTo(infoCols,
+        { opacity: 0, y: 25, filter: "blur(3px)" },
+        {
+          opacity: 1, y: 0, filter: "blur(0px)",
+          stagger: 0.06,
+          duration: 0.2,
+          ease: "none",
+          clearProps: "filter"
+        },
+        0.18
+      );
+    }
+
+    // Bottom bar
+    const bottomBar = containerRef.current.querySelector(".ft-bottom");
+    if (bottomBar) {
+      tl.fromTo(bottomBar,
+        { opacity: 0, y: 15 },
+        { opacity: 1, y: 0, duration: 0.15, ease: "none" },
+        0.28
+      );
+    }
+
+    // ── Floating particle on the divider lines ──
+    const particles = containerRef.current.querySelectorAll(".ft-particle");
+    particles.forEach((p) => {
+      gsap.fromTo(p,
+        { left: "0%", opacity: 0 },
+        {
+          left: "100%", opacity: 1,
+          duration: 10, repeat: -1, ease: "none",
+          keyframes: [
+            { opacity: 0.7, offset: 0.08 },
+            { opacity: 0.7, offset: 0.92 },
+            { opacity: 0, offset: 1.0 },
+          ],
+        }
+      );
+    });
+
+    // ── Accent word: gentle opacity pulse (no glow) ──
+    const accentWord = containerRef.current.querySelector(".ft-accent-word");
+    if (accentWord) {
+      gsap.fromTo(accentWord,
+        { opacity: 0.7 },
+        {
+          opacity: 1,
+          duration: 3,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
         }
       );
     }
-  }, []);
+
+    // ── SHIVAM: Wave float — each letter bobs up/down in a sine wave ──
+    const firstNameChars = containerRef.current.querySelectorAll(".ft-char-first");
+    if (firstNameChars.length > 0) {
+      firstNameChars.forEach((ch, i) => {
+        gsap.to(ch, {
+          y: -6,
+          duration: 2.2 + (i * 0.15),
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: i * 0.35,
+        });
+      });
+    }
+
+    // ── DIWAN: Slow parallax drift — the whole outlined name breathes independently ──
+    const lastNameBlock = containerRef.current.querySelector(".ft-last-name-block");
+    if (lastNameBlock) {
+      gsap.to(lastNameBlock, {
+        x: 8,
+        scale: 1.015,
+        duration: 5,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+    }
+  }, { scope: containerRef });
+
+  const firstName = "SHIVAM";
+  const lastName = "DIWAN";
 
   return (
-    <section id="contact" ref={containerRef} className="relative w-full min-h-[80vh] flex flex-col justify-center items-center text-center px-6">
-      
-      <div ref={textRef} className="z-10 flex flex-col items-center max-w-2xl">
-        <div className="text-mono text-text-tertiary mb-8">
-          04 / INQUIRIES
+    <section
+      id="contact"
+      ref={containerRef}
+      className="relative w-full h-[100dvh] flex flex-col bg-transparent z-10 overflow-hidden"
+    >
+      {/* Shader BG */}
+      <FooterShaderBg />
+
+      {/* Ambient glow */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-[radial-gradient(circle,rgba(232,168,74,0.012)_0%,transparent_75%)] rounded-full blur-[120px] pointer-events-none z-0" />
+
+      {/* ═══════════════════════════════════════════════
+          EDITORIAL FOOTER — Full Viewport
+          3 vertical zones: Tagline → Giant Name → Info Grid
+         ═══════════════════════════════════════════════ */}
+
+      <div className="relative z-10 flex flex-col h-full w-full max-w-[1800px] mx-auto px-6 md:px-12 lg:px-16 xl:px-20">
+
+        {/* ─── ZONE 1: Tagline + top accent ─── */}
+        <div className="flex-shrink-0 pt-12 md:pt-16 lg:pt-20">
+          <div
+            className="ft-tagline flex items-start justify-between"
+            style={{ opacity: 0, willChange: "transform, opacity, filter" }}
+          >
+            <p className="text-2xl sm:text-3xl md:text-4xl lg:text-[3.5vw] xl:text-[3vw] font-serif font-light text-text-secondary/80 leading-[1.15] max-w-2xl lg:max-w-3xl">
+              Let&apos;s craft something{" "}
+              <span className="ft-accent-word italic text-accent">extraordinary</span>
+              <span className="text-accent/60">.</span>
+            </p>
+
+            {/* Availability indicator — top right */}
+            <div className="hidden md:flex items-center gap-3 pt-3">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+              </span>
+              <span className="font-mono text-[11px] tracking-[0.2em] text-emerald-400/70 uppercase">
+                Available for work
+              </span>
+            </div>
+          </div>
         </div>
-        
-        <h2 className="text-display text-text-primary mb-8 tracking-tighter">
-          Let's talk.
-        </h2>
 
-        <p className="text-body text-text-secondary mb-16">
-          Currently open for new opportunities. Whether you have a question or just want to say hi, my inbox is always open.
-        </p>
+        {/* ─── ZONE 2: Giant Name — fills the middle ─── */}
+        <div
+          className="flex-1 flex flex-col justify-center select-none w-full"
+          style={{ perspective: "1200px" }}
+        >
+          {/* First name — full width, left-aligned */}
+          <div className="w-full overflow-hidden leading-[0.85]">
+            <span className="block font-serif font-light tracking-[-0.04em] text-[16vw] sm:text-[15vw] md:text-[14vw] lg:text-[13vw] text-text-primary/95">
+              {firstName.split("").map((ch, i) => (
+                <span
+                  key={`f-${i}`}
+                  className="ft-char ft-char-first inline-block"
+                  style={{ opacity: 0, willChange: "transform, opacity" }}
+                >
+                  {ch}
+                </span>
+              ))}
+            </span>
+          </div>
 
-        <a href="mailto:hello@example.com" className="text-body font-medium text-bg-base bg-text-primary px-8 py-4 rounded-full hover:scale-105 transition-transform duration-300 cursor-none" data-interactive="true" data-cursor-type="cta">
-          hello@example.com
-        </a>
+          {/* Hairline between names */}
+          <div
+            className="ft-line h-[1px] w-full my-3 md:my-4 origin-left relative"
+            style={{
+              background: "linear-gradient(90deg, rgba(232,168,74,0.3) 0%, rgba(255,255,255,0.08) 50%, transparent 100%)",
+              willChange: "transform",
+            }}
+          >
+            <div className="ft-particle absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-accent blur-[1px] shadow-[0_0_8px_#E8A84A] opacity-0" />
+          </div>
 
-        <div className="flex gap-8 mt-32">
-          <a href="#" className="text-mono text-text-secondary hover:text-text-primary transition-colors cursor-none" data-interactive="true" data-cursor-type="social">GitHub</a>
-          <a href="#" className="text-mono text-text-secondary hover:text-text-primary transition-colors cursor-none" data-interactive="true" data-cursor-type="social">Twitter</a>
-          <a href="#" className="text-mono text-text-secondary hover:text-text-primary transition-colors cursor-none" data-interactive="true" data-cursor-type="social">LinkedIn</a>
+          {/* Last name — offset right, outlined italic */}
+          <div className="ft-last-name-block w-full overflow-hidden leading-[0.85] text-right">
+            <span className="inline-block font-serif font-light italic tracking-[-0.04em] text-[16vw] sm:text-[15vw] md:text-[14vw] lg:text-[13vw] text-transparent [-webkit-text-stroke:1.5px_rgba(255,255,255,0.18)]">
+              {lastName.split("").map((ch, i) => (
+                <span
+                  key={`l-${i}`}
+                  className="ft-char ft-char-last inline-block"
+                  style={{ opacity: 0, willChange: "transform, opacity" }}
+                >
+                  {ch}
+                </span>
+              ))}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-mono text-text-tertiary/50 w-full text-center">
-        © {new Date().getFullYear()} SHIVAM DIWAN. ALL RIGHTS RESERVED.
-      </div>
+        {/* ─── ZONE 3: Editorial Info Grid — bottom anchored ─── */}
+        <div className="flex-shrink-0 pb-6 md:pb-10">
 
+          {/* Divider */}
+          <div
+            className="ft-line h-[1px] w-full mb-8 md:mb-10 origin-left relative"
+            style={{
+              background: "linear-gradient(90deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
+              willChange: "transform",
+            }}
+          >
+            <div className="ft-particle absolute top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-white/40 blur-[0.5px] shadow-[0_0_4px_rgba(255,255,255,0.3)] opacity-0" />
+          </div>
+
+          {/* Info columns — spread across full width */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-y-8 gap-x-8 md:gap-x-6 mb-8 md:mb-10">
+
+            {/* Col 1: Email */}
+            <div className="ft-col flex flex-col gap-4" style={{ opacity: 0, willChange: "transform, opacity, filter" }}>
+              <span className="font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-accent/60 uppercase">Email</span>
+              <a
+                href="mailto:hello@shivamdiwan.com"
+                className="font-sans text-sm md:text-base text-text-secondary/70 hover:text-white transition-colors duration-500 cursor-none leading-relaxed"
+                data-interactive="true"
+              >
+                hello@shivamdiwan.com
+              </a>
+            </div>
+
+            {/* Col 2: Socials */}
+            <div className="ft-col flex flex-col gap-4" style={{ opacity: 0, willChange: "transform, opacity, filter" }}>
+              <span className="font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-accent/60 uppercase">Social</span>
+              <div className="flex flex-col gap-2">
+                {[
+                  { href: "https://github.com/DShivam9", label: "GitHub" },
+                  { href: "https://linkedin.com", label: "LinkedIn" },
+                  { href: "https://twitter.com", label: "Twitter / X" },
+                ].map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-sans text-sm md:text-base text-text-secondary/70 hover:text-white transition-colors duration-500 cursor-none"
+                    data-interactive="true"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Col 3: Location */}
+            <div className="ft-col flex flex-col gap-4" style={{ opacity: 0, willChange: "transform, opacity, filter" }}>
+              <span className="font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-accent/60 uppercase">Location</span>
+              <span className="font-sans text-sm md:text-base text-text-secondary/70 leading-relaxed">
+                India
+              </span>
+            </div>
+
+            {/* Col 4: Expertise */}
+            <div className="ft-col hidden md:flex flex-col gap-4" style={{ opacity: 0, willChange: "transform, opacity, filter" }}>
+              <span className="font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-accent/60 uppercase">Focus</span>
+              <div className="flex flex-col gap-2">
+                <span className="font-sans text-sm md:text-base text-text-secondary/70">3D & WebGL</span>
+                <span className="font-sans text-sm md:text-base text-text-secondary/70">Interactive Design</span>
+                <span className="font-sans text-sm md:text-base text-text-secondary/70">Full-Stack Engineering</span>
+              </div>
+            </div>
+
+            {/* Col 5: CTA — right-aligned on desktop */}
+            <div className="ft-col col-span-2 sm:col-span-1 flex flex-col gap-4 sm:items-end" style={{ opacity: 0, willChange: "transform, opacity, filter" }}>
+              <span className="font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-accent/60 uppercase">Start a project</span>
+              <a
+                href="mailto:hello@shivamdiwan.com"
+                className="group flex items-center gap-4 cursor-none"
+                data-interactive="true"
+              >
+                <span className="font-serif italic text-lg md:text-xl lg:text-2xl text-text-secondary/50 group-hover:text-accent transition-colors duration-700">
+                  Get in touch
+                </span>
+                <span className="w-10 h-10 md:w-11 md:h-11 rounded-full border border-white/10 group-hover:border-accent/40 flex items-center justify-center transition-all duration-700">
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    className="text-text-tertiary/40 group-hover:text-accent transition-all duration-700"
+                    style={{ transition: "color 700ms cubic-bezier(0.16,1,0.3,1), transform 700ms cubic-bezier(0.16,1,0.3,1)" }}
+                  >
+                    <path d="M2 1H9V8M9 1L1 9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </a>
+            </div>
+          </div>
+
+          {/* Bottom bar — copyright */}
+          <div
+            className="ft-bottom flex flex-col sm:flex-row justify-between items-center gap-2 border-t border-white/[0.04] pt-5"
+            style={{ opacity: 0, willChange: "transform, opacity" }}
+          >
+            <span className="font-mono text-[8px] md:text-[9px] tracking-[0.22em] text-text-tertiary/35 uppercase">
+              © {new Date().getFullYear()} Shivam Diwan. All rights reserved.
+            </span>
+            <span className="font-mono text-[8px] md:text-[9px] tracking-[0.22em] text-text-tertiary/35 uppercase">
+              Designed & Developed in India
+            </span>
+          </div>
+        </div>
+
+      </div>
     </section>
   );
 }

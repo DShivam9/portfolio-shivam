@@ -14,12 +14,10 @@ export default function SkillRune({ glyph, name, proof }: SkillRuneProps) {
 
   const handleMouseEnter = () => {
     setIsHovered(true);
-    window.dispatchEvent(new CustomEvent('katanaHover', { detail: { name, active: true } }));
   };
   
   const handleMouseLeave = () => {
     setIsHovered(false);
-    window.dispatchEvent(new CustomEvent('katanaHover', { detail: { name, active: false } }));
   };
 
   return (

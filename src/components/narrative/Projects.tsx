@@ -54,23 +54,28 @@ export default function Projects() {
     rows.forEach((row) => {
       const text = row.querySelector(".project-text");
       const card = row.querySelector(".project-card");
+      const elements = [text, card].filter(Boolean);
 
-      gsap.fromTo(
-        [text, card],
-        { opacity: 0, y: 40, filter: "blur(6px)" },
-        {
-          opacity: 1,
-          y: 0,
-          filter: "blur(0px)",
-          duration: 1.6,
-          stagger: 0.2,
-          ease: "power4.out",
-          scrollTrigger: {
-            trigger: row,
-            start: "top 80%",
-            toggleActions: "play none none none",
-          },
-        }
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: row,
+          start: "top 80%",
+          toggleActions: "play none none none",
+        },
+      });
+
+      // Blur resolves smoothly but finishes before the movement does
+      tl.fromTo(elements,
+        { filter: "blur(3px)" },
+        { filter: "blur(0px)", duration: 0.8, stagger: 0.15, ease: "power3.out", clearProps: "filter" },
+        0
+      );
+
+      // Position + opacity at cinematic pace
+      tl.fromTo(elements,
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 1.4, stagger: 0.2, ease: "power4.out" },
+        0
       );
     });
   }, { scope: containerRef });
@@ -102,7 +107,7 @@ export default function Projects() {
               {/* ── Image Card ── */}
               <div
                 className="project-card"
-                style={{ width: '100%', maxWidth: '680px', flexShrink: 0, opacity: 0 }}
+                style={{ width: '100%', maxWidth: '680px', flexShrink: 0, opacity: 0, willChange: 'transform, opacity, filter' }}
               >
                 <div className="relative w-full overflow-hidden group bg-[#0a0a0b]" style={{ aspectRatio: '16 / 10', borderRadius: '10px' }}>
                   {/* Gold glow */}
@@ -137,7 +142,7 @@ export default function Projects() {
               {/* ── Text Column ── */}
               <div
                 className="project-text flex flex-col justify-center"
-                style={{ flex: '1 1 0', minWidth: 0, opacity: 0 }}
+                style={{ flex: '1 1 0', minWidth: 0, opacity: 0, willChange: 'transform, opacity, filter' }}
               >
                 <h2
                   className="font-serif font-light uppercase text-white/90"

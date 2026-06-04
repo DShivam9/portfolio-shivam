@@ -125,3 +125,40 @@ body {
     cursor: auto;
   }
 }
+
+/* ============================================================
+   PREMIUM PORTFOLIO PHOTO CARDS (ABOUT SECTION)
+   ============================================================ */
+
+.photo-card-container {
+  box-shadow: 0 0 50px rgba(212, 168, 83, 0.04);
+  transition: box-shadow 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.photo-card-container:hover {
+  box-shadow: 0 0 80px rgba(212, 168, 83, 0.15);
+}
+
+.photo-card-img-wrap img {
+  filter: brightness(0.62) grayscale(20%);
+  transform: scale(1);
+  transition: filter 1.6s cubic-bezier(0.16, 1, 0.3, 1), transform 1.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.photo-card-container:hover .photo-card-img-wrap img {
+  filter: brightness(0.84) grayscale(0%);
+  transform: scale(1.035) !important;
+}
+
+/* Gold shimmer overlay */
+.photo-card-overlay {
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 1.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.photo-card-container:hover .photo-card-overlay {
+  transform: translateY(-10%);
+  opacity: 1;
+}
+

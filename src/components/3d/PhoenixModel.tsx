@@ -165,7 +165,7 @@ export default function PhoenixModel() {
   });
 
   return (
-    <group ref={group}>
+    <group ref={group} position={[-0.15, -20, -20]}>
       {/* 
         This wrapper group spins the bird 180 degrees around the global Y-axis 
         so its belly faces the background and its back faces the camera. 

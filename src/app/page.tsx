@@ -3,6 +3,8 @@
 import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
 import Lenis from "lenis";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import Navbar from "@/components/navigation/Navbar";
 import Hero from "@/components/narrative/Hero";
@@ -10,6 +12,7 @@ import Gateway from "@/components/narrative/Gateway";
 import About from "@/components/narrative/About";
 import Projects from "@/components/narrative/Projects";
 import GatewayProjects from "@/components/narrative/GatewayProjects";
+import GatewaySkills from "@/components/narrative/GatewaySkills";
 import Skills from "@/components/narrative/Skills";
 import Contact from "@/components/narrative/Contact";
 import CustomCursor from "@/components/cursor/CustomCursor";
@@ -18,6 +21,7 @@ const SceneCanvas = dynamic(() => import("@/components/3d/SceneCanvas"), { ssr: 
 const SplashCursor = dynamic(() => import("@/components/cursor/SplashCursor"), { ssr: false });
 const GlobalEnvironment = dynamic(() => import("@/components/ui/GlobalEnvironment"), { ssr: false });
 
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   
@@ -35,11 +39,20 @@ export default function Home() {
 
     (window as any).lenis = lenis;
 
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
+    // ── Critical: Sync Lenis with GSAP ScrollTrigger ──
+    // Lenis reports its smooth interpolated scroll position to ScrollTrigger
+    // on every scroll event, so scrub-driven timelines stay perfectly in sync.
+    lenis.on("scroll", ScrollTrigger.update);
+
+    // ── Drive Lenis from GSAP's ticker (single RAF loop) ──
+    // Using GSAP's ticker instead of a raw requestAnimationFrame ensures
+    // both animation systems share the exact same frame timing.
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+
+    // Disable GSAP's lag smoothing to prevent conflicts with Lenis
+    gsap.ticker.lagSmoothing(0);
 
     return () => {
       (window as any).lenis = null;
@@ -66,9 +79,10 @@ export default function Home() {
         <Hero />
         <Gateway />
         <About />
+        <GatewaySkills />
+        <Skills />
         <GatewayProjects />
         <Projects />
-        <Skills />
         <Contact />
       </div>
     </main>
