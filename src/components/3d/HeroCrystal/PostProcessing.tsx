@@ -3,7 +3,7 @@ import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 
 export default function PostProcessing() {
   return (
-    <EffectComposer disableNormalPass>
+    <EffectComposer>
       <Bloom 
         luminanceThreshold={1.5} 
         luminanceSmoothing={0.5} 
