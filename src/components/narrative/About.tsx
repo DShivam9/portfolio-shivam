@@ -176,7 +176,10 @@ export default function About() {
               02 — Craft
             </span>
             <div className="font-light text-text-secondary md:text-right" style={{ fontSize: 'clamp(1.05rem, 1.8vw, 1.5rem)', lineHeight: 1.85, marginLeft: 'auto', maxWidth: '650px' }}>
-              <span className="reveal-line block" style={{ opacity: 0 }}>My journey began with a deep fascination for 3D realms and interactive mythos.</span>
+              <span className="reveal-line block" style={{ opacity: 0 }}>
+                <span className="font-serif text-accent" style={{ fontSize: '1.8em', lineHeight: 1, marginRight: '0.08em' }}>M</span>
+                y journey began with a deep fascination for 3D realms and interactive mythos.
+              </span>
               <span className="reveal-line block" style={{ opacity: 0 }}>Over the years, I have honed the craft of bridging rigorous technical architecture</span>
               <span className="reveal-line block" style={{ opacity: 0 }}>
                 with{" "}
@@ -215,7 +218,10 @@ export default function About() {
               03 — Method
             </span>
             <div className="font-light text-text-secondary" style={{ fontSize: 'clamp(1.05rem, 1.8vw, 1.5rem)', lineHeight: 1.85, maxWidth: '700px' }}>
-              <span className="reveal-line block" style={{ opacity: 0 }}>Whether orchestrating complex physics in WebGL or ensuring an application</span>
+              <span className="reveal-line block" style={{ opacity: 0 }}>
+                <span className="font-serif text-accent" style={{ fontSize: '1.8em', lineHeight: 1, marginRight: '0.08em' }}>W</span>
+                hether orchestrating complex physics in WebGL or ensuring an application
+              </span>
               <span className="reveal-line block" style={{ opacity: 0 }}>scales flawlessly, my approach is rooted in absolute precision.</span>
               <span className="reveal-line block" style={{ opacity: 0 }}>I believe that true digital elegance emerges only from a deep</span>
               <span className="reveal-line block" style={{ opacity: 0 }}>understanding of the underlying arcane systems.</span>
@@ -245,7 +251,10 @@ export default function About() {
               04 — Vision
             </span>
             <div className="font-light text-text-secondary md:text-right" style={{ fontSize: 'clamp(1.15rem, 2vw, 1.75rem)', lineHeight: 1.85, marginLeft: 'auto', maxWidth: '650px' }}>
-              <span className="reveal-line block" style={{ opacity: 0 }}>Currently, I am exploring the intersection of spatial computing</span>
+              <span className="reveal-line block" style={{ opacity: 0 }}>
+                <span className="font-serif text-accent" style={{ fontSize: '1.8em', lineHeight: 1, marginRight: '0.1em' }}>C</span>
+                urrently, I am exploring the intersection of spatial computing
+              </span>
               <span className="reveal-line block" style={{ opacity: 0 }}>and the open web, forging interfaces that feel</span>
               <span className="reveal-line block" style={{ opacity: 0 }}>
                 <span className="relative inline-block cursor-none group" data-interactive>

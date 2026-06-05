@@ -79,7 +79,6 @@ export default function Home() {
         <Hero />
         <Gateway />
         <About />
-        <GatewaySkills />
         <Skills />
         <GatewayProjects />
         <Projects />

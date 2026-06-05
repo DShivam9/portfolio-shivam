@@ -191,7 +191,7 @@ export default function Hero() {
               <div className="word-out text-mono text-text-tertiary mb-6 tracking-[0.4em] uppercase text-[10px]">
                 <span className="hero-subtitle inline-block">Shivam Diwan — Digital Engineer</span>
               </div>
-              <h1 className="text-hero text-text-primary tracking-tight leading-[0.9]">
+              <h1 className="text-hero text-text-primary tracking-tight leading-[1.05]">
                 <span className="word-out inline-block mr-4">
                   {"Crafting".split("").map((ch, i) => (
                     <span key={i} className="hero-char-1 inline-block" style={{ willChange: 'transform, opacity, filter' }}>
@@ -214,7 +214,7 @@ export default function Hero() {
               <div className="word-in text-mono text-text-tertiary mb-6 tracking-[0.4em] uppercase text-[10px] opacity-0">
                 Where Structure Meets Ethereal Design
               </div>
-              <h1 className="text-hero text-text-primary tracking-tight leading-[0.9]">
+              <h1 className="text-hero text-text-primary tracking-tight leading-[1.05]">
                 <span className="word-in inline-block opacity-0 mr-6">Awakening</span><br />
                 <span className="word-in inline-block opacity-0 mr-4">Digital</span>
                 <span className="word-in inline-block text-text-secondary italic opacity-0">Worlds.</span>

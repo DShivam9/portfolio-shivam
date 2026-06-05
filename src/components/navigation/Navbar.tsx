@@ -177,7 +177,7 @@ export default function Navbar() {
             <span 
               key={i} 
               ref={(el) => { lettersRef.current[i] = el; }}
-              className={`inline-block font-serif italic text-white text-xl md:text-2xl leading-none transition-none ${char === " " ? "w-2" : ""}`}
+              className={`inline-block font-serif italic text-white text-xl md:text-2xl leading-normal transition-none ${char === " " ? "w-2" : ""}`}
               style={{ willChange: 'transform, opacity, filter' }}
             >
               {char === " " ? "\u00A0" : char}

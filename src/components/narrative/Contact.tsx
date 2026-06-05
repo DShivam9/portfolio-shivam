@@ -35,33 +35,7 @@ export default function Contact() {
       );
     }
 
-    // Giant name characters — cinematic blur-resolve (matches site's signature animation)
-    const nameChars = containerRef.current.querySelectorAll(".ft-char");
-    if (nameChars.length > 0) {
-      // Blur resolves first
-      tl.fromTo(nameChars,
-        { filter: "blur(12px)" },
-        {
-          filter: "blur(0px)",
-          stagger: 0.012,
-          duration: 0.2,
-          ease: "none",
-          clearProps: "filter",
-        },
-        0.04
-      );
-      // Opacity + scale animate simultaneously
-      tl.fromTo(nameChars,
-        { opacity: 0, scale: 0.88 },
-        {
-          opacity: 1, scale: 1,
-          stagger: 0.012,
-          duration: 0.3,
-          ease: "none",
-        },
-        0.04
-      );
-    }
+    // Giant name characters — handled by the self-writing loop below, NOT the scrub timeline
 
     // Hairline dividers expand
     const dividers = containerRef.current.querySelectorAll(".ft-line");
@@ -131,33 +105,46 @@ export default function Contact() {
       );
     }
 
-    // ── SHIVAM: Wave float — each letter bobs up/down in a sine wave ──
-    const firstNameChars = containerRef.current.querySelectorAll(".ft-char-first");
-    if (firstNameChars.length > 0) {
-      firstNameChars.forEach((ch, i) => {
-        gsap.to(ch, {
-          y: -6,
-          duration: 2.2 + (i * 0.15),
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          delay: i * 0.35,
-        });
+    // ── Self-writing loop: triggered when footer scrolls into view ──
+    const allNameChars = containerRef.current.querySelectorAll(".ft-char");
+    if (allNameChars.length > 0) {
+      // Start fully visible by default
+      gsap.set(allNameChars, { clipPath: "inset(0 0% 0 0)" });
+
+      // Build the writing timeline (paused — started by ScrollTrigger after delay)
+      // Every repeat will have a 10-second delay
+      const writeTl = gsap.timeline({ repeat: -1, repeatDelay: 10, paused: true });
+
+      // 1. Erase: letters clip away from right-to-left
+      writeTl.to(allNameChars, {
+        clipPath: "inset(0 0 0 100%)",
+        stagger: { each: 0.08, from: "end" },
+        duration: 0.4,
+        ease: "power2.in",
+      }, 0);
+
+      // 2. Instantly reset to hidden on the left
+      writeTl.set(allNameChars, { clipPath: "inset(0 100% 0 0)" });
+
+      // 3. Write in: letters reveal left-to-right
+      writeTl.to(allNameChars, {
+        clipPath: "inset(0 0% 0 0)",
+        stagger: 0.12,
+        duration: 0.6,
+        ease: "power3.out",
+      }, "+=0.25"); // subtle delay after full erase before writing back in
+
+      // Start the loop after 10 seconds when the section enters the viewport
+      ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: "top 80%",
+        onEnter: () => {
+          gsap.delayedCall(10, () => writeTl.play());
+        },
+        once: true,
       });
     }
 
-    // ── DIWAN: Slow parallax drift — the whole outlined name breathes independently ──
-    const lastNameBlock = containerRef.current.querySelector(".ft-last-name-block");
-    if (lastNameBlock) {
-      gsap.to(lastNameBlock, {
-        x: 8,
-        scale: 1.015,
-        duration: 5,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-      });
-    }
   }, { scope: containerRef });
 
   const firstName = "SHIVAM";
@@ -194,32 +181,33 @@ export default function Contact() {
               <span className="text-accent/60">.</span>
             </p>
 
-            {/* Availability indicator — top right */}
+            {/* Availability indicator — elegant editorial style */}
             <div className="hidden md:flex items-center gap-3 pt-3">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
-              </span>
-              <span className="font-mono text-[11px] tracking-[0.2em] text-emerald-400/70 uppercase">
-                Available for work
+              <span className="w-1.5 h-1.5 rounded-full bg-accent/70 shadow-[0_0_6px_rgba(232,168,74,0.4)]" />
+              <span className="font-serif italic text-sm text-accent/60 tracking-wide">
+                Open to new projects
               </span>
             </div>
           </div>
         </div>
 
-        {/* ─── ZONE 2: Giant Name — fills the middle ─── */}
+        {/* ─── ZONE 2: Giant Name — centered vertically ─── */}
         <div
-          className="flex-1 flex flex-col justify-center select-none w-full"
+          className="flex-1 flex flex-col items-start justify-center select-none w-full gap-0"
           style={{ perspective: "1200px" }}
         >
-          {/* First name — full width, left-aligned */}
-          <div className="w-full overflow-hidden leading-[0.85]">
-            <span className="block font-serif font-light tracking-[-0.04em] text-[16vw] sm:text-[15vw] md:text-[14vw] lg:text-[13vw] text-text-primary/95">
+          {/* First name — full width, left-aligned with inline paddingLeft shift */}
+          <div className="w-full overflow-visible" style={{ lineHeight: '1.1', marginBottom: '-2.5vw', paddingLeft: '8vw' }}>
+            <span className="block font-serif font-light tracking-wider text-[16vw] sm:text-[15vw] md:text-[14vw] lg:text-[13vw] text-text-primary/95">
               {firstName.split("").map((ch, i) => (
                 <span
                   key={`f-${i}`}
                   className="ft-char ft-char-first inline-block"
-                  style={{ opacity: 0, willChange: "transform, opacity" }}
+                  style={{
+                    willChange: "clip-path",
+                    padding: "0.12em 0.15em",
+                    margin: "0 -0.15em",
+                  }}
                 >
                   {ch}
                 </span>
@@ -229,7 +217,7 @@ export default function Contact() {
 
           {/* Hairline between names */}
           <div
-            className="ft-line h-[1px] w-full my-3 md:my-4 origin-left relative"
+            className="ft-line h-[1px] w-full my-0 origin-left relative"
             style={{
               background: "linear-gradient(90deg, rgba(232,168,74,0.3) 0%, rgba(255,255,255,0.08) 50%, transparent 100%)",
               willChange: "transform",
@@ -238,14 +226,18 @@ export default function Contact() {
             <div className="ft-particle absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-accent blur-[1px] shadow-[0_0_8px_#E8A84A] opacity-0" />
           </div>
 
-          {/* Last name — offset right, outlined italic */}
-          <div className="ft-last-name-block w-full overflow-hidden leading-[0.85] text-right">
-            <span className="inline-block font-serif font-light italic tracking-[-0.04em] text-[16vw] sm:text-[15vw] md:text-[14vw] lg:text-[13vw] text-transparent [-webkit-text-stroke:1.5px_rgba(255,255,255,0.18)]">
+          {/* Last name — offset right, outlined italic with inline paddingRight shift */}
+          <div className="ft-last-name-block w-full overflow-visible text-right" style={{ lineHeight: '1.1', marginTop: '-2.5vw', paddingRight: '15vw' }}>
+            <span className="inline-block font-serif font-light italic tracking-wider text-[16vw] sm:text-[15vw] md:text-[14vw] lg:text-[13vw] text-transparent [-webkit-text-stroke:1.5px_rgba(255,255,255,0.18)]">
               {lastName.split("").map((ch, i) => (
                 <span
                   key={`l-${i}`}
                   className="ft-char ft-char-last inline-block"
-                  style={{ opacity: 0, willChange: "transform, opacity" }}
+                  style={{
+                    willChange: "clip-path",
+                    padding: "0.12em 0.25em",
+                    margin: "0 -0.25em",
+                  }}
                 >
                   {ch}
                 </span>

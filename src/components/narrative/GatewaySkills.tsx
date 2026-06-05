@@ -47,7 +47,12 @@ export default function GatewaySkills() {
       <div ref={textRef} className="flex flex-col items-center text-center z-10" style={{ willChange: 'transform, opacity, filter' }}>
         <h2 className="text-display text-text-primary tracking-tight leading-[1.1]">
           Architectural<br />
-          <span className="font-serif italic bg-gradient-to-r from-accent via-[#ffdf99] to-accent bg-clip-text text-transparent">Capabilities</span>
+          <span 
+            className="font-serif italic bg-gradient-to-r from-accent via-[#ffdf99] to-accent bg-clip-text text-transparent"
+            style={{ paddingLeft: '0.15em', paddingRight: '0.15em', marginLeft: '-0.15em', marginRight: '-0.15em' }}
+          >
+            Capabilities
+          </span>
         </h2>
       </div>
     </section>

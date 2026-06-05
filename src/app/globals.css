@@ -1,11 +1,51 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap');
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Melodrama";
+  src: url("/fonts/Melodrama-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Melodrama";
+  src: url("/fonts/Melodrama-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Melodrama";
+  src: url("/fonts/Melodrama-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Melodrama";
+  src: url("/fonts/Melodrama-Semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Melodrama";
+  src: url("/fonts/Melodrama-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ============================================================
    ETHEREAL CINEMATIC TOKENS
    ============================================================ */
 
-@theme inline {
+@theme {
   --color-bg-base: var(--bg-base);
   
   --color-text-primary: var(--text-primary);
@@ -15,7 +55,7 @@
   --color-accent: var(--accent);
   
   --font-sans: "Outfit", system-ui, -apple-system, sans-serif;
-  --font-serif: "Playfair Display", Georgia, serif;
+  --font-serif: "Melodrama", Georgia, serif;
 }
 
 :root {
@@ -55,7 +95,7 @@ html {
 body {
   background-color: var(--bg-base);
   color: var(--text-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
   overflow-x: clip;
   cursor: none; 
 }
@@ -78,7 +118,7 @@ body {
   font-family: var(--font-serif);
   font-size: var(--text-hero);
   font-weight: 400;
-  line-height: 0.9;
+  line-height: 1.05;
   letter-spacing: -0.02em;
 }
 
@@ -86,7 +126,7 @@ body {
   font-family: var(--font-serif);
   font-size: var(--text-display);
   font-weight: 400;
-  line-height: 1;
+  line-height: 1.15;
   letter-spacing: -0.02em;
 }
 
@@ -94,7 +134,7 @@ body {
   font-family: var(--font-serif);
   font-size: var(--text-heading);
   font-weight: 400;
-  line-height: 1.1;
+  line-height: 1.2;
   letter-spacing: -0.01em;
 }
 

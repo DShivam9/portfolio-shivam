@@ -47,7 +47,12 @@ export default function Gateway() {
       <div ref={textRef} className="flex flex-col items-center text-center z-10" style={{ willChange: 'transform, opacity, filter' }}>
         <h2 className="text-display text-text-primary tracking-tight leading-[1.1]">
           The Person Behind<br />
-          <span className="font-serif italic bg-gradient-to-r from-accent via-[#ffdf99] to-accent bg-clip-text text-transparent">The Code</span>
+          <span 
+            className="font-serif italic bg-gradient-to-r from-accent via-[#ffdf99] to-accent bg-clip-text text-transparent"
+            style={{ paddingLeft: '0.15em', paddingRight: '0.15em', marginLeft: '-0.15em', marginRight: '-0.15em' }}
+          >
+            The Code
+          </span>
         </h2>
       </div>
     </section>
