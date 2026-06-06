@@ -1,0 +1,179 @@
+<USER_REQUEST>
+# CRYSTAL SKILLS EXPERIENCE — INTERACTION REDESIGN (FINAL ART DIRECTION)
+
+The current crystal model, material language, and overall aesthetic are approved.
+
+Do not redesign the crystal.
+
+Do not replace the crystal.
+
+Do not significantly alter the crystal geometry.
+
+Do not introduce a new visual direction.
+
+The crystal already feels premium.
+
+This iteration focuses entirely on interaction design, storytelling, timing, choreography, composition, and reveal mechanics.
+
+The goal is to transform the crystal from a visual object into a memorable discovery experience.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CORE PHILOSOPHY
+
+The user should feel like they are uncovering hidden knowledge stored inside an ancient digital artifact.
+
+This is NOT a skills section.
+
+This is NOT a technology showcase.
+
+This is NOT a portfolio animation.
+
+This is a discovery experience.
+
+The crystal should feel mysterious before interaction and rewarding after interaction.
+
+Avoid:
+
+* floating badges
+* orbiting logos
+* spinning technologies
+* portfolio gimmicks
+* exploding particles
+* chaotic physics
+* game inventory interfaces
+* HUD-style interactions
+
+Target inspiration:
+
+* Apple product reveals
+* Apple Vision Pro demos
+* Noomo
+* Active Theory
+* Resn
+* Dogstudio
+* luxury museum exhibits
+* premium digital art installations
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+INITIAL STATE
+
+When the section loads:
+
+The crystal exists alone.
+
+No technologies visible.
+
+No technology names visible.
+
+No category labels visible.
+
+No icons visible.
+
+No hints visible.
+
+No previews visible.
+
+The crystal must remain mysterious.
+
+The user should have no idea what is hidden inside.
+
+The crystal must command nearly all visual attention.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HOVE
+<truncated 5609 bytes>
+y
+* increases readability
+
+Additional information may appear:
+
+* years of experience
+* project count
+* specialization
+
+These details should emerge naturally from the crystal.
+
+Avoid:
+
+* floating cards
+* popups
+* tooltips
+* modal windows
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CLOSE STATE
+
+When closing:
+
+Skill crystals slowly return.
+
+Main crystal reforms.
+
+Fracture illumination fades.
+
+The artifact becomes mysterious again.
+
+Everything should feel natural.
+
+Everything should feel reversible.
+
+No reset animation.
+
+No abrupt disappearance.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+QUALITY STANDARD
+
+Before implementation ask:
+
+1. Does this feel like a portfolio animation?
+
+If yes:
+Redesign.
+
+2. Does this feel like a technology showcase?
+
+If yes:
+Redesign.
+
+3. Does this feel like discovering hidden knowledge?
+
+If no:
+Redesign.
+
+4. Is the crystal still the hero after interaction?
+
+If no:
+Redesign.
+
+5. Is timing and choreography carrying the experience more than visual effects?
+
+If no:
+Redesign.
+
+6. Would this feel at home on an Awwwards Site of the Day?
+
+If no:
+Continue refining.
+
+The final experience should feel like uncovering knowledge stored inside a rare crystal artifact rather than interacting with a traditional skills section.
+
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-06-06T14:53:15+05:30.
+
+The user's current state is as follows:
+Other open documents:
+- d:\Games\portolio\src\components\3d\Lighting.tsx (LANGUAGE_TSX)
+- d:\Games\portolio\src\app\page.tsx (LANGUAGE_TSX)
+- d:\Games\portolio\src\components\3d\ArcadeModel.tsx (LANGUAGE_TSX)
+- d:\Games\portolio\src\components\3d\PhoenixModel.tsx (LANGUAGE_TSX)
+- d:\Games\portolio\src\hooks\useChapterTracker.ts (LANGUAGE_TYPESCRIPT)
+Running terminal commands:
+- npm run dev (in d:\Games\portolio, running for 1h50m43s)
+</ADDITIONAL_METADATA>

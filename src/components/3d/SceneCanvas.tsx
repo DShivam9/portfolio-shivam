@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { ToneMappingMode } from "postprocessing";
 import Lighting from "./Lighting";
 import PhoenixModel from "./PhoenixModel";
+import SkillsPhoenixModel from "./SkillsPhoenixModel";
 import CameraRig from "./CameraRig";
 
 export default function SceneCanvas() {
@@ -21,6 +22,7 @@ export default function SceneCanvas() {
 
       <Suspense fallback={null}>
         <PhoenixModel />
+        <SkillsPhoenixModel />
       </Suspense>
 
       <EffectComposer multisampling={0}>

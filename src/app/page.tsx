@@ -75,7 +75,7 @@ export default function Home() {
       </div>
 
       {/* DOM CONTENT LAYER */}
-      <div className="relative z-10 flex flex-col w-full mx-auto">
+      <div className="relative z-10 w-full mx-auto">
         <Hero />
         <Gateway />
         <About />

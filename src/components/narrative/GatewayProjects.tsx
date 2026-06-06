@@ -14,26 +14,18 @@ export default function GatewayProjects() {
   useGSAP(() => {
     if (!containerRef.current || !textRef.current) return;
 
-    // Use a timeline so blur clears quickly while position/opacity animate cinematically
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
-        start: "top 75%",
-        toggleActions: "play none none none"
+        start: "top 85%",
+        end: "center 45%",
+        scrub: true
       }
     });
 
-    // Blur resolves smoothly but finishes before the movement does
     tl.fromTo(textRef.current,
-      { filter: "blur(4px)" },
-      { filter: "blur(0px)", duration: 0.9, ease: "power3.out", clearProps: "filter" },
-      0
-    );
-
-    // Position, scale, opacity animate at a cinematic pace
-    tl.fromTo(textRef.current,
-      { opacity: 0, scale: 0.9, y: 50 },
-      { opacity: 1, scale: 1, y: 0, duration: 1.6, ease: "power3.out" },
+      { opacity: 0, scale: 1.05, y: -40, filter: "blur(12px)" },
+      { opacity: 1, scale: 1, y: 0, filter: "blur(0px)", ease: "power2.out", duration: 1 },
       0
     );
 

@@ -29,7 +29,7 @@ export default function Contact() {
     const tagline = containerRef.current.querySelector(".ft-tagline");
     if (tagline) {
       tl.fromTo(tagline,
-        { opacity: 0, y: 40, filter: "blur(5px)" },
+        { opacity: 0, y: 40, filter: "blur(12px)" },
         { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.2, ease: "none", clearProps: "filter" },
         0
       );
@@ -51,7 +51,7 @@ export default function Contact() {
     const infoCols = containerRef.current.querySelectorAll(".ft-col");
     if (infoCols.length > 0) {
       tl.fromTo(infoCols,
-        { opacity: 0, y: 25, filter: "blur(3px)" },
+        { opacity: 0, y: 25, filter: "blur(12px)" },
         {
           opacity: 1, y: 0, filter: "blur(0px)",
           stagger: 0.06,

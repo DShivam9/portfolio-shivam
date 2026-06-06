@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import SplitType from "split-type";
 import { useScrollStore } from "@/store/scrollStore";
 
 export default function Hero() {
@@ -109,9 +110,13 @@ export default function Hero() {
       }
     });
 
+    // Split the paragraph for word-by-word blur scrub
+    const paraSplit = new SplitType(".hero-desc-para", { types: "words" });
+
     // Phase 1: Scrub Set 1 out (Word by Word)
     tl.to(".word-out", {
       opacity: 0,
+      filter: "blur(12px)",
       y: -60,
       rotationX: 45,
       scale: 0.9,
@@ -123,11 +128,13 @@ export default function Hero() {
     // Phase 2: Scrub Set 2 in (Word by Word)
     tl.fromTo(".word-in", {
       opacity: 0,
+      filter: "blur(12px)",
       y: 60,
       rotationX: -45,
       scale: 1.1,
     }, {
       opacity: 1,
+      filter: "blur(0px)",
       y: 0,
       rotationX: 0,
       scale: 1,
@@ -136,12 +143,27 @@ export default function Hero() {
       ease: "power2.out"
     }, 0.4);
 
-    // Phase 3: Reveal Secondary Elements (Paragraph, Button, Socials)
-    tl.fromTo(".reveal-on-scroll", {
+    // Phase 3: Reveal Secondary Elements (Paragraph words, Button, Socials)
+    tl.fromTo(paraSplit.words, {
       opacity: 0,
+      filter: "blur(10px)",
       y: 20,
     }, {
       opacity: 1,
+      filter: "blur(0px)",
+      y: 0,
+      stagger: 0.04,
+      duration: 1,
+      ease: "power3.out"
+    }, 0.8);
+
+    tl.fromTo(".reveal-on-scroll", {
+      opacity: 0,
+      filter: "blur(10px)",
+      y: 20,
+    }, {
+      opacity: 1,
+      filter: "blur(0px)",
       y: 0,
       stagger: 0.1,
       duration: 1,
@@ -155,11 +177,12 @@ export default function Hero() {
     }, 0);
 
     // Phase 4: Clean fade out of all Hero elements at the bottom of the scrub to clear the viewport for Chapter 2
-    tl.to(".word-in, .reveal-on-scroll", {
+    tl.to([".word-in", paraSplit.words, ".reveal-on-scroll"], {
       opacity: 0,
+      filter: "blur(10px)",
       y: -40,
       duration: 0.8,
-      stagger: 0.05,
+      stagger: 0.01,
       ease: "power2.in"
     }, 1.8);
 
@@ -167,6 +190,7 @@ export default function Hero() {
       entranceTl.kill();
       tl.scrollTrigger?.kill();
       tl.kill();
+      paraSplit.revert();
     };
   }, [setProgress]);
 
@@ -226,8 +250,8 @@ export default function Hero() {
 
         {/* BOTTOM ANCHORED ELEMENTS - Absolutely positioned at the bottom of the screen to permanently prevent overlap */}
         <div className="absolute bottom-8 md:bottom-10 w-full px-6 flex flex-col items-center justify-center z-30 pointer-events-none">
-          <div className="reveal-on-scroll opacity-0 max-w-2xl mx-auto text-center mix-blend-difference">
-            <p className="text-body text-text-secondary font-light leading-relaxed mb-10 text-sm md:text-base">
+          <div className="max-w-2xl mx-auto text-center mix-blend-difference">
+            <p className="hero-desc-para text-body text-text-secondary font-light leading-relaxed mb-10 text-sm md:text-base">
               A deep exploration into immersive 3D web environments. By stripping away standard constraints, we elevate the web from a document to an experience.
             </p>
           </div>
