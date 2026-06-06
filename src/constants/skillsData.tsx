@@ -9,7 +9,7 @@ import { FaRobot, FaProjectDiagram } from "react-icons/fa";
 
 // ── CUSTOM ICON WRAPPERS TO MATCH SIZING ──
 
-const IconWrapper = ({ Icon, color }: { Icon: React.ElementType, color?: string }) => (
+const IconWrapper = ({ Icon, color }: { Icon: React.ElementType<any>, color?: string }) => (
   <Icon className="w-[24px] h-[24px] md:w-[30px] md:h-[30px]" style={{ color: color || 'inherit' }} />
 );
 
