@@ -10,6 +10,22 @@ import SplitTextReveal from "../ui/SplitTextReveal";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const FocusPullPhoto = ({ src, alt }: { src: string, alt: string }) => {
+  return (
+    <div className="photo-card-container relative w-full rounded-xl bg-[#020202] overflow-hidden group cursor-pointer">
+      <img 
+        src={src} 
+        alt={alt} 
+        className="w-full h-auto block rounded-xl relative z-10 opacity-70 grayscale-[40%] scale-100 group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+      />
+      {/* Vignette that softens on hover */}
+      <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.85)_100%)] pointer-events-none z-20 transition-opacity duration-[800ms] group-hover:opacity-60" />
+      {/* Golden tint overlay */}
+      <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-accent/30 via-accent/5 to-transparent mix-blend-overlay pointer-events-none z-20 transition-opacity duration-[800ms] group-hover:opacity-100 opacity-60" />
+    </div>
+  );
+};
+
 export default function About() {
   const containerRef = useRef<HTMLElement>(null);
   const setProgress = useScrollStore((state) => state.setProgress);
@@ -112,15 +128,7 @@ export default function About() {
           </div>
           
           <div className="shrink-0 w-full max-w-[320px] md:max-w-[400px]">
-            <div className="photo-card-container relative w-full rounded-xl bg-[#020202]">
-              <img 
-                src="/about/trip_photo_1.jpeg" 
-                alt="Shivam Diwan" 
-                className="w-full h-auto block rounded-xl relative z-10"
-              />
-              <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.75)_100%)] pointer-events-none z-20" />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-accent/50 via-accent/10 to-transparent mix-blend-overlay pointer-events-none z-20" />
-            </div>
+            <FocusPullPhoto src="/about/trip_photo_1.jpeg" alt="Shivam Diwan" />
           </div>
         </div>
 
@@ -134,15 +142,7 @@ export default function About() {
           </div>
           
           <div className="shrink-0 w-full max-w-[440px] md:max-w-[500px]">
-            <div className="photo-card-container relative w-full rounded-xl bg-[#020202]">
-              <img 
-                src="/about/WhatsApp Image 2026-06-04 at 10.16.29 PM.jpeg" 
-                alt="Craft" 
-                className="w-full h-auto block rounded-xl relative z-10"
-              />
-              <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.75)_100%)] pointer-events-none z-20" />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-accent/50 via-accent/10 to-transparent mix-blend-overlay pointer-events-none z-20" />
-            </div>
+            <FocusPullPhoto src="/about/WhatsApp Image 2026-06-04 at 10.16.29 PM.jpeg" alt="Craft" />
           </div>
         </div>
 
@@ -163,15 +163,7 @@ export default function About() {
           </div>
           
           <div className="shrink-0 w-full max-w-[460px] md:max-w-[500px]">
-            <div className="photo-card-container relative w-full rounded-xl bg-[#020202]">
-              <img 
-                src="/about/WhatsApp Image 2026-06-04 at 10.16.29 PM (1).jpeg" 
-                alt="Method" 
-                className="w-full h-auto block rounded-xl relative z-10"
-              />
-              <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.75)_100%)] pointer-events-none z-20" />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-accent/50 via-accent/10 to-transparent mix-blend-overlay pointer-events-none z-20" />
-            </div>
+            <FocusPullPhoto src="/about/WhatsApp Image 2026-06-04 at 10.16.29 PM (1).jpeg" alt="Method" />
           </div>
         </div>
 
@@ -185,15 +177,7 @@ export default function About() {
           </div>
           
           <div className="shrink-0 w-full max-w-[350px] md:max-w-[400px]">
-            <div className="photo-card-container relative w-full rounded-xl bg-[#020202]">
-              <img 
-                src="/about/WhatsApp Image 2026-06-04 at 10.16.29 PM (2).jpeg" 
-                alt="Vision" 
-                className="w-full h-auto block rounded-xl relative z-10"
-              />
-              <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.75)_100%)] pointer-events-none z-20" />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-accent/50 via-accent/10 to-transparent mix-blend-overlay pointer-events-none z-20" />
-            </div>
+            <FocusPullPhoto src="/about/WhatsApp Image 2026-06-04 at 10.16.29 PM (2).jpeg" alt="Vision" />
           </div>
         </div>
 
