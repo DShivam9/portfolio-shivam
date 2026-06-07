@@ -47,14 +47,16 @@ export default function Home() {
     // ── Drive Lenis from GSAP's ticker (single RAF loop) ──
     // Using GSAP's ticker instead of a raw requestAnimationFrame ensures
     // both animation systems share the exact same frame timing.
-    gsap.ticker.add((time) => {
+    const updateLenis = (time: number) => {
       lenis.raf(time * 1000);
-    });
+    };
+    gsap.ticker.add(updateLenis);
 
     // Disable GSAP's lag smoothing to prevent conflicts with Lenis
     gsap.ticker.lagSmoothing(0);
 
     return () => {
+      gsap.ticker.remove(updateLenis);
       (window as any).lenis = null;
       lenis.destroy();
     };

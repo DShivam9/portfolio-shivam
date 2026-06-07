@@ -101,7 +101,7 @@ export default function About() {
           scrollTrigger: {
             trigger: triggerContainer,
             start: "top 90%",
-            end: "top 55%",
+            end: "bottom 75%",
             scrub: true,
           },
         }
