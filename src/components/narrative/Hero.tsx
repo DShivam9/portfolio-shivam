@@ -74,7 +74,7 @@ export default function Hero() {
 
     // Phase 3: Persistent breathing glow on "Experiences." — text feels alive
     gsap.to(".hero-char-2", {
-      textShadow: "0 0 30px rgba(176,176,176,0.3)",
+      textShadow: "0 0 30px rgba(232, 168, 74, 0.4)",
       duration: 2.5,
       repeat: -1,
       yoyo: true,
@@ -223,7 +223,7 @@ export default function Hero() {
                     </span>
                   ))}
                 </span><br />
-                <span className="word-out inline-block text-text-secondary italic">
+                <span className="word-out inline-block font-serif italic text-[#ffdf99] drop-shadow-sm" style={{ paddingLeft: '0.15em', paddingRight: '0.15em', marginLeft: '-0.15em', marginRight: '-0.15em' }}>
                   {"Experiences.".split("").map((ch, i) => (
                     <span key={i} className="hero-char-2 inline-block" style={{ willChange: 'transform, opacity, filter' }}>
                       {ch}
@@ -241,7 +241,7 @@ export default function Hero() {
               <h1 className="text-hero text-text-primary tracking-tight leading-[1.05]">
                 <span className="word-in inline-block opacity-0 mr-6">Awakening</span><br />
                 <span className="word-in inline-block opacity-0 mr-4">Digital</span>
-                <span className="word-in inline-block text-text-secondary italic opacity-0">Worlds.</span>
+                <span className="word-in inline-block font-serif italic opacity-0 text-[#ffdf99] drop-shadow-sm" style={{ paddingLeft: '0.15em', paddingRight: '0.15em', marginLeft: '-0.15em', marginRight: '-0.15em' }}>Worlds.</span>
               </h1>
             </div>
 
@@ -252,7 +252,7 @@ export default function Hero() {
         <div className="absolute bottom-8 md:bottom-10 w-full px-6 flex flex-col items-center justify-center z-30 pointer-events-none">
           <div className="max-w-2xl mx-auto text-center mix-blend-difference">
             <p className="hero-desc-para text-body text-text-secondary font-light leading-relaxed mb-10 text-sm md:text-base">
-              A deep exploration into immersive 3D web environments. By stripping away standard constraints, we elevate the web from a document to an experience.
+              A deep exploration into <span className="text-[#ffdf99] font-medium">immersive 3D</span> web environments. By stripping away standard constraints, we elevate the web from a document to an <span className="text-[#ffdf99] font-medium">experience</span>.
             </p>
           </div>
 
@@ -269,7 +269,7 @@ export default function Hero() {
 
         {/* SOCIAL LINKS - Pinned to sides */}
         <div className="absolute top-1/2 -translate-y-1/2 left-8 md:left-12 flex flex-col gap-8 text-[10px] tracking-[0.3em] uppercase text-text-secondary font-light mix-blend-difference pointer-events-auto z-20">
-          <a href="#" className="reveal-on-scroll opacity-0 hover:text-accent transition-colors cursor-none [writing-mode:vertical-rl] rotate-180" data-interactive="true" data-cursor-type="social">Twitter / X</a>
+          <a href="#" className="reveal-on-scroll opacity-0 hover:text-accent transition-colors cursor-none [writing-mode:vertical-rl] rotate-180" data-interactive="true" data-cursor-type="social">Resume</a>
           <a href="#" className="reveal-on-scroll opacity-0 hover:text-accent transition-colors cursor-none [writing-mode:vertical-rl] rotate-180" data-interactive="true" data-cursor-type="social">LinkedIn</a>
         </div>
         

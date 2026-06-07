@@ -72,6 +72,26 @@ export default function About() {
       );
     });
 
+    // ── Drop Cap Scrub Animation ──
+    const dropCaps = containerRef.current.querySelectorAll(".drop-cap-letter");
+    dropCaps.forEach((cap) => {
+      const triggerContainer = cap.nextElementSibling;
+      gsap.fromTo(cap,
+        { opacity: 0.1, filter: "blur(8px)" },
+        {
+          opacity: 1,
+          filter: "blur(0px)",
+          ease: "none",
+          scrollTrigger: {
+            trigger: triggerContainer,
+            start: "top 90%",
+            end: "top 55%",
+            scrub: true,
+          },
+        }
+      );
+    });
+
   }, { scope: containerRef, dependencies: [setProgress] });
 
   return (
@@ -85,8 +105,9 @@ export default function About() {
         {/* ── Para 1 + Photo ── */}
         <div className="self-stretch flex flex-col md:flex-row items-center gap-12 md:gap-24">
           <div className="flex-1 min-w-0">
-            <SplitTextReveal animation="scrub" type="words" className="font-light text-text-secondary text-2xl md:text-3xl leading-relaxed max-w-2xl">
-              I am a digital engineer bound to the creation of highly immersive, performant web experiences. By stripping away standard constraints, I seek to elevate the web from a mere document to an ethereal experience.
+            <span className="drop-cap-letter float-left text-accent font-serif font-semibold text-7xl md:text-8xl leading-none mr-5 mt-2">I</span>
+            <SplitTextReveal animation="scrub" type="words" className="font-light text-text-secondary text-xl md:text-2xl leading-loose tracking-wide max-w-2xl">
+              enjoy building products that combine <span className="text-accent font-medium">thoughtful user experiences</span> with <span className="text-accent font-medium">solid engineering</span>. My strongest interests lie in <span className="text-accent font-medium">frontend and full-stack development</span>, where I can work on everything from crafting intuitive interfaces to implementing the systems that power them. What motivates me most is turning ideas into <span className="text-accent font-medium">real products</span> that people can use, explore, and benefit from.
             </SplitTextReveal>
           </div>
           
@@ -105,9 +126,10 @@ export default function About() {
 
         {/* ── Para 2 + Photo ── */}
         <div className="self-stretch flex flex-col md:flex-row-reverse items-center gap-12 md:gap-24">
-          <div className="flex-1 min-w-0 flex flex-col items-start md:items-end text-left md:text-right">
-            <SplitTextReveal animation="scrub" type="words" className="font-light text-text-secondary text-2xl md:text-3xl leading-relaxed max-w-2xl">
-              My journey began with a deep fascination for 3D realms and interactive mythos. Over the years, I have honed the craft of bridging rigorous technical architecture with boundary-pushing, magical design.
+          <div className="flex-1 min-w-0">
+            <span className="drop-cap-letter float-left text-accent font-serif font-semibold text-7xl md:text-8xl leading-none mr-5 mt-2">I</span>
+            <SplitTextReveal animation="scrub" type="words" className="font-light text-text-secondary text-xl md:text-2xl leading-loose tracking-wide max-w-2xl">
+              learn best by building. Every project I take on is an opportunity to <span className="text-accent font-medium">explore new technologies</span>, solve unfamiliar problems, and expand my understanding of how <span className="text-accent font-medium">great software</span> is made. Whether it's shipping a full-stack application, integrating modern tools and workflows, or refining a product through multiple iterations, I enjoy the process of <span className="text-accent font-medium">continuously improving</span> both the product and myself.
             </SplitTextReveal>
           </div>
           
@@ -134,8 +156,9 @@ export default function About() {
         {/* ── Para 3 + Photo ── */}
         <div className="self-stretch flex flex-col md:flex-row items-center gap-12 md:gap-24">
           <div className="flex-1 min-w-0">
-            <SplitTextReveal animation="scrub" type="words" className="font-light text-text-secondary text-2xl md:text-3xl leading-relaxed max-w-2xl">
-              Whether orchestrating complex physics in WebGL or ensuring an application scales flawlessly, my approach is rooted in absolute precision. I believe that true digital elegance emerges only from a deep understanding of the underlying arcane systems.
+            <span className="drop-cap-letter float-left text-accent font-serif font-semibold text-7xl md:text-8xl leading-none mr-5 mt-2">W</span>
+            <SplitTextReveal animation="scrub" type="words" className="font-light text-text-secondary text-xl md:text-2xl leading-loose tracking-wide max-w-2xl">
+              hat sets me apart is not a single technology, but the way I approach my work. I <span className="text-accent font-medium">take ownership</span> of the things I build, pay <span className="text-accent font-medium">close attention to details</span>, adapt quickly when faced with new challenges, and genuinely enjoy figuring things out. I believe strong software comes from <span className="text-accent font-medium">curiosity, persistence</span>, and a willingness to <span className="text-accent font-medium">keep refining</span> until the result feels right.
             </SplitTextReveal>
           </div>
           
@@ -154,9 +177,10 @@ export default function About() {
 
         {/* ── Para 4 + Photo ── */}
         <div className="self-stretch flex flex-col md:flex-row-reverse items-center gap-12 md:gap-24">
-          <div className="flex-1 min-w-0 flex flex-col items-start md:items-end text-left md:text-right">
-            <SplitTextReveal animation="scrub" type="words" className="font-light text-text-secondary text-2xl md:text-3xl leading-relaxed max-w-2xl">
-              Currently, I am exploring the intersection of spatial computing and the open web, forging interfaces that feel intuitive, human, and alive.
+          <div className="flex-1 min-w-0">
+            <span className="drop-cap-letter float-left text-accent font-serif font-semibold text-7xl md:text-8xl leading-none mr-5 mt-2">I</span>
+            <SplitTextReveal animation="scrub" type="words" className="font-light text-text-secondary text-xl md:text-2xl leading-loose tracking-wide max-w-2xl">
+              care deeply about <span className="text-accent font-medium">craftsmanship</span>. Too much of the modern web feels generic, rushed, and interchangeable. I am drawn to building products that feel <span className="text-accent font-medium">intentional</span>—software that is <span className="text-accent font-medium">reliable, polished, and enjoyable</span> to use. My goal is to continue growing as an engineer, contribute to meaningful products, and eventually <span className="text-accent font-medium">lead teams</span> that share the same commitment to quality and continuous improvement.
             </SplitTextReveal>
           </div>
           

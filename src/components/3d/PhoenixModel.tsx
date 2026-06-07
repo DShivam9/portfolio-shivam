@@ -85,6 +85,10 @@ export default function PhoenixModel() {
   const birdMesh = useRef<THREE.Group>(null);
   const group = useRef<THREE.Group>(null);
   const maxProgressRef = useRef(0);
+  
+  // Animation state refs for manual ping-pong
+  const animTimeRef = useRef(0);
+  const animDirRef = useRef(1);
 
   useEffect(() => {
     if (actions && Object.keys(actions).length > 0) {

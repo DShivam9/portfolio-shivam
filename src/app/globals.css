@@ -202,3 +202,49 @@ body {
   opacity: 1;
 }
 
+/* ============================================================
+   MARQUEE UTILITIES
+   ============================================================ */
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes marquee-reverse {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-reverse 35s linear infinite;
+  /* Since it starts at 0, if it translates to 100% it might pop, 
+     but we'll position the reverse marquee slightly differently or 
+     just use negative translateX */
+}
+/* A better reverse marquee just goes from -100% to 0% */
+@keyframes marquee-rev {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+.animate-marquee-rev {
+  animation: marquee-rev 35s linear infinite;
+}
+
+
