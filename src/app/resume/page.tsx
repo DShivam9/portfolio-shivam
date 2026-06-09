@@ -41,7 +41,7 @@ export default function ResumePage() {
 
   return (
     <main className="relative w-full min-h-screen bg-[#020202] text-white overflow-hidden flex flex-col cursor-none font-sans selection:bg-accent/30 perspective-[1000px]">
-      <CustomCursor golden={true} />
+      <CustomCursor />
       
       {/* Cinematic Light Rays */}
       <SideRays 
