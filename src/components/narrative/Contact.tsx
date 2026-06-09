@@ -84,7 +84,7 @@ export default function Contact() {
           nameRef.current.style.backgroundImage = "none";
           nameRef.current.style.color = "rgba(255,255,255,0.7)";
           nameRef.current.style.backgroundClip = "border-box";
-          nameRef.current.style.WebkitBackgroundClip = "border-box";
+          nameRef.current.style.webkitBackgroundClip = "border-box";
           
           // A truly high-end editorial glow effect. Not bouncy, not shimmering. 
           // Just a very slow, deep, subtle atmospheric breath of light.
