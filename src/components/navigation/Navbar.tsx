@@ -1,227 +1,158 @@
 "use client";
 
-import React, { useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import gsap from "gsap";
 
 const NAV_ITEMS = ['About', 'Projects', 'Contact'];
 
 export default function Navbar() {
-  const navRef = useRef<HTMLElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
-  const lettersRef = useRef<(HTMLSpanElement | null)[]>([]);
-  // Store refs for each nav link's individual letter spans
-  const navLettersRef = useRef<Map<string, HTMLSpanElement[]>>(new Map());
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const linksRef = useRef<(HTMLButtonElement | null)[]>([]);
+  const overlayTl = useRef<gsap.core.Timeline | null>(null);
 
   const scrollTo = useCallback((selector: string) => {
-    const el = document.querySelector(selector);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
+    setIsOpen(false); // Close menu first
+    setTimeout(() => {
+      const el = document.querySelector(selector);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 500); // Wait for overlay animation to reverse
   }, []);
 
+  // Initial cinematic entrance for header
   useEffect(() => {
-    // ---- CINEMATIC NAVBAR ENTRANCE ----
-    const navTl = gsap.timeline({ delay: 0.4 });
-    
-    gsap.set(navRef.current, { opacity: 0 });
-    navTl.to(navRef.current, { opacity: 1, duration: 0.3, ease: "none" });
-
-    // Logo letters cascade in
-    const logoLetters = lettersRef.current.filter(Boolean) as HTMLSpanElement[];
-    gsap.set(logoLetters, { y: 30, opacity: 0, filter: "blur(3px)" });
-    navTl.to(logoLetters, {
-      y: 0,
-      opacity: 1,
-      filter: "blur(0px)",
-      duration: 0.6,
-      stagger: { each: 0.04, from: "start" },
-      ease: "power3.out",
-      clearProps: "filter"
-    }, "-=0.1");
-
-    // Nav link letters cascade in
-    NAV_ITEMS.forEach((item) => {
-      const letters = navLettersRef.current.get(item);
-      if (!letters?.length) return;
-      gsap.set(letters, { opacity: 0, y: 8 });
-      navTl.to(letters, {
-        opacity: 1,
-        y: 0,
-        duration: 0.5,
-        stagger: { each: 0.03, from: "start" },
-        ease: "power2.out"
-      }, "-=0.4");
-    });
-
-    // ---- LOGO HOVER ----
-    const logo = logoRef.current;
-    if (!logo) return;
-
-    let logoHoverTl: gsap.core.Timeline | null = null;
-
-    const handleLogoEnter = () => {
-      if (logoHoverTl) logoHoverTl.kill();
-      const letters = lettersRef.current.filter(Boolean) as HTMLSpanElement[];
-      logoHoverTl = gsap.timeline();
-      logoHoverTl.to(letters, {
-        y: -6,
-        color: '#E8A84A',
-        textShadow: '0 0 20px rgba(232,168,74,0.8), 0 0 40px rgba(232,168,74,0.3)',
-        duration: 0.4,
-        stagger: { each: 0.04, from: "start" },
-        ease: "power2.out"
-      });
-      logoHoverTl.to(letters, {
-        y: -2,
-        duration: 0.6,
-        stagger: { each: 0.03, from: "start" },
-        ease: "elastic.out(1, 0.6)"
-      }, "-=0.2");
-    };
-
-    const handleLogoLeave = () => {
-      if (logoHoverTl) logoHoverTl.kill();
-      const letters = lettersRef.current.filter(Boolean) as HTMLSpanElement[];
-      logoHoverTl = gsap.timeline();
-      logoHoverTl.to(letters, {
-        y: 0,
-        color: '#ffffff',
-        textShadow: '0 0 0px rgba(232,168,74,0)',
-        duration: 0.5,
-        stagger: { each: 0.03, from: "end" },
-        ease: "power3.out"
-      });
-    };
-
-    logo.addEventListener("mouseenter", handleLogoEnter);
-    logo.addEventListener("mouseleave", handleLogoLeave);
-
-    // ---- NAV LINK HOVER — per-letter gold wave (same style as logo) ----
-    const navHoverTls = new Map<string, gsap.core.Timeline>();
-
-    const navElements = document.querySelectorAll(".nav-element");
-    navElements.forEach((el) => {
-      const item = el.getAttribute("data-nav-item") || "";
-      
-      el.addEventListener("mouseenter", () => {
-        const existing = navHoverTls.get(item);
-        if (existing) existing.kill();
-
-        const letters = navLettersRef.current.get(item);
-        if (!letters?.length) return;
-
-        const tl = gsap.timeline();
-        // Wave up + turn gold
-        tl.to(letters, {
-          y: -3,
-          color: '#E8A84A',
-          textShadow: '0 0 14px rgba(232,168,74,0.6)',
-          duration: 0.3,
-          stagger: { each: 0.025, from: "start" },
-          ease: "power2.out"
-        });
-        // Settle back
-        tl.to(letters, {
-          y: -1,
-          duration: 0.4,
-          stagger: { each: 0.02, from: "start" },
-          ease: "elastic.out(1, 0.5)"
-        }, "-=0.15");
-        
-        navHoverTls.set(item, tl);
-      });
-
-      el.addEventListener("mouseleave", () => {
-        const existing = navHoverTls.get(item);
-        if (existing) existing.kill();
-
-        const letters = navLettersRef.current.get(item);
-        if (!letters?.length) return;
-
-        const tl = gsap.timeline();
-        tl.to(letters, {
-          y: 0,
-          color: 'rgba(255,255,255,0.6)',
-          textShadow: '0 0 0px rgba(232,168,74,0)',
-          duration: 0.35,
-          stagger: { each: 0.02, from: "end" },
-          ease: "power3.out"
-        });
-        navHoverTls.set(item, tl);
-      });
-    });
-
-    return () => {
-      logo.removeEventListener("mouseenter", handleLogoEnter);
-      logo.removeEventListener("mouseleave", handleLogoLeave);
-      if (logoHoverTl) logoHoverTl.kill();
-      navHoverTls.forEach(tl => tl.kill());
-    };
+    gsap.fromTo(headerRef.current,
+      { opacity: 0, y: -20 },
+      { opacity: 1, y: 0, duration: 1.2, ease: "power3.out", delay: 0.5 }
+    );
   }, []);
 
-  const logoText = "Shivam Diwan";
+  // Overlay Animation Setup
+  useEffect(() => {
+    if (!overlayRef.current) return;
+    
+    // Setup timeline only once
+    if (!overlayTl.current) {
+      overlayTl.current = gsap.timeline({ paused: true });
+      
+      // Blur and darken the background
+      overlayTl.current.to(overlayRef.current, {
+        autoAlpha: 1,
+        backdropFilter: "blur(24px)",
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        duration: 0.7,
+        ease: "power2.inOut"
+      });
+      
+      // Sweep in the huge links
+      overlayTl.current.fromTo(linksRef.current, {
+        y: 80,
+        opacity: 0,
+        rotationX: -30,
+        filter: "blur(10px)"
+      }, {
+        y: 0,
+        opacity: 1,
+        rotationX: 0,
+        filter: "blur(0px)",
+        duration: 1.0,
+        stagger: 0.1,
+        ease: "expo.out",
+        clearProps: "filter"
+      }, "-=0.3");
+    }
+
+    if (isOpen) {
+      overlayTl.current.play();
+      document.body.style.overflow = "hidden"; // Prevent scrolling while open
+    } else {
+      overlayTl.current.reverse();
+      document.body.style.overflow = "";
+    }
+  }, [isOpen]);
 
   return (
-    <header ref={navRef} className="absolute top-8 left-8 right-8 md:top-12 md:left-12 md:right-12 z-50 mix-blend-difference pointer-events-none flex justify-between items-center">
-      
-      {/* LEFT: Logo with per-letter scatter */}
-      <div 
-        ref={logoRef}
-        className="pointer-events-auto cursor-none" 
-        onClick={() => scrollTo('#hero')}
-        data-interactive="true"
-        data-cursor-type="logo"
-      >
-        <div className="flex items-baseline gap-[1px]">
-          {logoText.split("").map((char, i) => (
-            <span 
-              key={i} 
-              ref={(el) => { lettersRef.current[i] = el; }}
-              className={`inline-block font-serif italic text-white text-xl md:text-2xl leading-normal transition-none ${char === " " ? "w-2" : ""}`}
-              style={{ willChange: 'transform, opacity, filter' }}
-            >
-              {char === " " ? "\u00A0" : char}
+    <>
+      {/* HEADER: Always on top, fixed to scroll */}
+      <header ref={headerRef} className="fixed top-8 left-8 right-8 md:top-12 md:left-12 md:right-12 z-[100] mix-blend-difference flex justify-between items-center pointer-events-none">
+        
+        {/* LOGO - Vertical Slide Reveal */}
+        <div 
+          ref={logoRef}
+          className="pointer-events-auto cursor-none group relative overflow-hidden px-1 py-1" 
+          onClick={() => {
+            if (isOpen) setIsOpen(false);
+            scrollTo('#hero');
+          }}
+          data-interactive="true"
+          data-cursor-type="logo"
+        >
+          <div className="relative font-serif italic text-xl md:text-2xl leading-none">
+            <span className="block transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-[120%]">
+              Shivam Diwan
             </span>
-          ))}
+            <span className="absolute inset-0 block text-[#E8A84A] translate-y-[120%] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0">
+              Shivam Diwan
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* RIGHT: Nav Links — per-letter animation matching logo style */}
-      <nav className="flex items-center gap-8 md:gap-16 pointer-events-auto">
-        {NAV_ITEMS.map((item) => (
-          <button 
-            key={item} 
-            className="nav-element relative cursor-none py-2"
-            onClick={() => scrollTo(`#${item.toLowerCase()}`)}
-            data-interactive="true"
-            data-cursor-type="nav"
-            data-nav-item={item}
-          >
-            <span className="flex items-baseline gap-[0.5px]">
-              {item.toUpperCase().split("").map((char, i) => (
-                <span
-                  key={i}
-                  ref={(el) => {
-                    if (el) {
-                      const existing = navLettersRef.current.get(item) || [];
-                      existing[i] = el;
-                      navLettersRef.current.set(item, existing);
-                    }
-                  }}
-                  className="inline-block text-[11px] md:text-sm font-light leading-none"
-                  style={{
-                    letterSpacing: '0.2em',
-                    color: 'rgba(255,255,255,0.6)',
-                    willChange: 'transform',
-                  }}
-                >
-                  {char}
-                </span>
-              ))}
-            </span>
-          </button>
-        ))}
-      </nav>
-    </header>
+        {/* MENU BUTTON - Expanding Lines */}
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className="pointer-events-auto cursor-none flex flex-col items-end justify-center w-12 h-12 gap-2 group"
+          data-interactive="true"
+          aria-label="Toggle menu"
+        >
+          {/* Top Line */}
+          <div 
+            className={`h-[1px] transition-all duration-700 ease-[cubic-bezier(0.87,0,0.13,1)] ${
+              isOpen 
+                ? 'w-8 translate-y-[9px] rotate-45 bg-[#E8A84A]' 
+                : 'w-8 bg-white group-hover:w-10 group-hover:bg-[#E8A84A]'
+            }`} 
+          />
+          {/* Bottom Line */}
+          <div 
+            className={`h-[1px] transition-all duration-700 ease-[cubic-bezier(0.87,0,0.13,1)] ${
+              isOpen 
+                ? 'w-8 -translate-y-[9px] -rotate-45 bg-[#E8A84A]' 
+                : 'w-5 bg-white group-hover:w-10 group-hover:bg-[#E8A84A]'
+            }`} 
+          />
+        </button>
+      </header>
+
+      {/* FULLSCREEN OVERLAY */}
+      <div 
+        ref={overlayRef}
+        className="fixed inset-0 z-[90] flex items-center justify-center invisible opacity-0 pointer-events-none"
+        style={{ pointerEvents: isOpen ? 'auto' : 'none' }}
+      >
+        <nav className="flex flex-col items-start gap-8 md:gap-12 perspective-[1000px]">
+          {NAV_ITEMS.map((item, i) => (
+            <button 
+              key={item} 
+              ref={el => { linksRef.current[i] = el; }}
+              className="cursor-none group relative flex items-center"
+              onClick={() => scrollTo(`#${item.toLowerCase()}`)}
+              data-interactive="true"
+            >
+              {/* Decorative sliding dash */}
+              <span className="absolute -left-12 h-[2px] w-8 bg-[#E8A84A] opacity-0 -translate-x-8 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:translate-x-0" />
+              
+              {/* Outlined text that fills on hover */}
+              <span className="block font-serif italic text-6xl md:text-8xl text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.3)] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:text-white group-hover:[-webkit-text-stroke:1px_transparent] group-hover:translate-x-6">
+                {item}
+              </span>
+            </button>
+          ))}
+        </nav>
+      </div>
+    </>
   );
 }

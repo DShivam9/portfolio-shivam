@@ -79,11 +79,22 @@ export default function Home() {
       {/* DOM CONTENT LAYER */}
       <div className="relative z-10 w-full mx-auto">
         <Hero />
+        
         <Gateway />
-        <About />
-        <Skills />
+        <div className="py-24 md:py-48">
+          <About />
+        </div>
+        
+        <GatewaySkills />
+        <div className="py-8 md:py-16">
+          <Skills />
+        </div>
+        
         <GatewayProjects />
-        <Projects />
+        <div className="py-24 md:py-48">
+          <Projects />
+        </div>
+        
         <Contact />
       </div>
     </main>

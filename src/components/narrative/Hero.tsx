@@ -17,69 +17,69 @@ export default function Hero() {
     if (!containerRef.current || !wrapperRef.current) return;
 
     // ---- CINEMATIC HERO ENTRANCE ----
-    const entranceTl = gsap.timeline({ delay: 0.3 });
+    const entranceTl = gsap.timeline({ delay: 0.1 });
 
-    // Phase 0: Subtitle — letter-spacing expands dramatically
+    // Phase 0: Subtitle — elegant upward fade with subtle tracking expansion
     entranceTl.fromTo(".hero-subtitle", 
-      { opacity: 0, letterSpacing: "0em" },
-      { opacity: 1, letterSpacing: "0.4em", duration: 1.2, ease: "power2.out" }
+      { opacity: 0, y: 15, filter: "blur(4px)", letterSpacing: "0.2em" },
+      { opacity: 1, y: 0, filter: "blur(0px)", letterSpacing: "0.4em", duration: 1.8, ease: "expo.out", clearProps: "filter" }
     );
 
-    // Phase 1: "Crafting" — each character sweeps up from below
-    // Blur resolves quickly; position/opacity/rotation animate cinematically
+    // Phase 1: "Crafting" — deep, slow sweep up with cinematic blur
     entranceTl.fromTo(".hero-char-1",
-      { filter: "blur(4px)" },
+      { filter: "blur(12px)" },
       { 
         filter: "blur(0px)",
-        duration: 0.35, 
-        stagger: { each: 0.05, from: "start" },
+        duration: 0.8, 
+        stagger: { each: 0.06, from: "start" },
         ease: "power2.out",
         clearProps: "filter"
       },
-      "-=0.6"
+      "-=1.4"
     );
     entranceTl.fromTo(".hero-char-1",
-      { y: 80, opacity: 0, rotationX: -40 },
+      { y: 120, opacity: 0, rotationX: -80, transformOrigin: "bottom" },
       { 
         y: 0, opacity: 1, rotationX: 0,
-        duration: 0.8, 
-        stagger: { each: 0.05, from: "start" },
-        ease: "power3.out",
+        duration: 2.0, 
+        stagger: { each: 0.06, from: "start" },
+        ease: "expo.out",
       },
-      "<" // Start at same time as the blur tween above
+      "<" 
     );
 
-    // Phase 2: "Experiences." — delayed italic wave
+    // Phase 2: "Experiences." — ultra-smooth editorial reveal
     entranceTl.fromTo(".hero-char-2",
-      { filter: "blur(3px)" },
+      { filter: "blur(12px)" },
       { 
         filter: "blur(0px)",
-        duration: 0.3,
-        stagger: { each: 0.04, from: "start" },
+        duration: 0.8,
+        stagger: { each: 0.06, from: "start" },
         ease: "power2.out",
         clearProps: "filter"
       },
-      "-=0.3"
+      "-=1.6"
     );
     entranceTl.fromTo(".hero-char-2",
-      { y: 60, opacity: 0, scaleY: 0.8 },
+      { y: 100, opacity: 0, rotationX: -50, transformOrigin: "bottom" },
       { 
-        y: 0, opacity: 1, scaleY: 1,
-        duration: 0.7,
-        stagger: { each: 0.04, from: "start" },
-        ease: "back.out(1.2)",
+        y: 0, opacity: 1, rotationX: 0,
+        duration: 2.2,
+        stagger: { each: 0.06, from: "start" },
+        ease: "expo.out",
       },
-      "<" // Start at same time as the blur tween above
+      "<" 
     );
 
-    // Phase 3: Persistent breathing glow on "Experiences." — text feels alive
+    // Phase 3: Ethereal glow on "Experiences." — slower breathing
     gsap.to(".hero-char-2", {
-      textShadow: "0 0 30px rgba(232, 168, 74, 0.4)",
-      duration: 2.5,
+      textShadow: "0 0 40px rgba(232, 168, 74, 0.5)",
+      duration: 3.5,
       repeat: -1,
       yoyo: true,
-      stagger: { each: 0.08, from: "start", repeat: -1, yoyo: true },
-      ease: "sine.inOut"
+      stagger: { each: 0.1, from: "start", repeat: -1, yoyo: true },
+      ease: "sine.inOut",
+      delay: 1.5
     });
 
     // ---- SCROLL INDICATOR ANIMATIONS ----
@@ -212,8 +212,8 @@ export default function Hero() {
             
             {/* TEXT SET 1 */}
             <div className="col-start-1 row-start-1 flex flex-col items-center justify-center z-10">
-              <div className="word-out text-mono text-text-tertiary mb-6 tracking-[0.4em] uppercase text-[10px]">
-                <span className="hero-subtitle inline-block">Shivam Diwan — Digital Engineer</span>
+              <div className="word-out text-mono text-white/90 mb-6 tracking-[0.4em] uppercase text-xs md:text-sm font-semibold drop-shadow-lg pl-[0.4em]">
+                <span className="hero-subtitle inline-block">Shivam Diwan — Full Stack & Frontend Developer</span>
               </div>
               <h1 className="text-hero text-text-primary tracking-tight leading-[1.05]">
                 <span className="word-out inline-block mr-4">
@@ -235,7 +235,7 @@ export default function Hero() {
 
             {/* TEXT SET 2 */}
             <div className="col-start-1 row-start-1 flex flex-col items-center justify-center z-20">
-              <div className="word-in text-mono text-text-tertiary mb-6 tracking-[0.4em] uppercase text-[10px] opacity-0">
+              <div className="word-in text-mono text-white/90 mb-6 tracking-[0.4em] uppercase text-xs md:text-sm font-semibold drop-shadow-lg opacity-0 pl-[0.4em]">
                 Where Structure Meets Ethereal Design
               </div>
               <h1 className="text-hero text-text-primary tracking-tight leading-[1.05]">

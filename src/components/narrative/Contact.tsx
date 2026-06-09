@@ -1,363 +1,253 @@
 "use client";
 
 import React, { useRef } from "react";
+import Link from "next/link";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import FooterShaderBg from "@/components/ui/FooterShaderBg";
+import SplitType from "split-type";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const SOCIAL_LINKS = [
+  { label: 'GITHUB', href: 'https://github.com/DShivam9' },
+  { label: 'LINKEDIN', href: 'https://www.linkedin.com/in/shivam-diwan-84a1b9342/' },
+  { label: 'RESUME', href: '/resume' }
+];
+
 export default function Contact() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLElement>(null);
+  
+  // Refs for the new Mask Reveal animation
+  const line1Ref = useRef<HTMLSpanElement>(null);
+  const line2Ref = useRef<HTMLSpanElement>(null);
+  const emailRef = useRef<HTMLAnchorElement>(null);
+  const linksRef = useRef<HTMLDivElement>(null);
+  const nameRef = useRef<HTMLHeadingElement>(null);
+  const lightRef = useRef<HTMLDivElement>(null);
+
+  // Ref for the ambient moving light
+  const ambientLightRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    if (!containerRef.current) return;
+    // HIGH-END EDITORIAL CINEMATIC REVEAL
+    
+    if (!line1Ref.current || !line2Ref.current || !nameRef.current) return;
 
-    // ── Scrub-driven editorial reveal ──
-    // Matches the site's signature blur+y scroll-scrub from About/Hero
+    // Split texts into characters for cinematic staggering
+    const splitLine1 = new SplitType(line1Ref.current, { types: 'chars' });
+    const splitLine2 = new SplitType(line2Ref.current, { types: 'chars' });
+    const splitName = new SplitType(nameRef.current, { types: 'chars' });
+    
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
-        start: "top 75%",
-        end: "top 10%",
-        scrub: 1.5,
+        start: "top 75%", 
       },
-    });
+      onComplete: () => {
+        // ── High-End Editorial Continuous Animations ──
+        // These only start AFTER the entrance reveal is completely finished.
 
-    // Tagline row
-    const tagline = containerRef.current.querySelector(".ft-tagline");
-    if (tagline) {
-      tl.fromTo(tagline,
-        { opacity: 0, y: 40, filter: "blur(12px)" },
-        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.2, ease: "none", clearProps: "filter" },
-        0
-      );
-    }
-
-    // Giant name characters — handled by the self-writing loop below, NOT the scrub timeline
-
-    // Hairline dividers expand
-    const dividers = containerRef.current.querySelectorAll(".ft-line");
-    dividers.forEach((div) => {
-      tl.fromTo(div,
-        { scaleX: 0 },
-        { scaleX: 1, duration: 0.25, ease: "none" },
-        0.12
-      );
-    });
-
-    // Info grid columns — staggered
-    const infoCols = containerRef.current.querySelectorAll(".ft-col");
-    if (infoCols.length > 0) {
-      tl.fromTo(infoCols,
-        { opacity: 0, y: 25, filter: "blur(12px)" },
-        {
-          opacity: 1, y: 0, filter: "blur(0px)",
-          stagger: 0.06,
-          duration: 0.2,
-          ease: "none",
-          clearProps: "filter"
-        },
-        0.18
-      );
-    }
-
-    // Bottom bar
-    const bottomBar = containerRef.current.querySelector(".ft-bottom");
-    if (bottomBar) {
-      tl.fromTo(bottomBar,
-        { opacity: 0, y: 15 },
-        { opacity: 1, y: 0, duration: 0.15, ease: "none" },
-        0.28
-      );
-    }
-
-    // ── Floating particle on the divider lines ──
-    const particles = containerRef.current.querySelectorAll(".ft-particle");
-    particles.forEach((p) => {
-      gsap.fromTo(p,
-        { left: "0%", opacity: 0 },
-        {
-          left: "100%", opacity: 1,
-          duration: 10, repeat: -1, ease: "none",
-          keyframes: [
-            { opacity: 0.7, offset: 0.08 },
-            { opacity: 0.7, offset: 0.92 },
-            { opacity: 0, offset: 1.0 },
-          ],
+        // 1. Cinematic Background Light Sweep
+        if (ambientLightRef.current) {
+          gsap.to(ambientLightRef.current, {
+            x: "5vw",
+            y: "-5vh",
+            opacity: 0.15,
+            scale: 1.1,
+            duration: 12,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+          });
         }
-      );
+
+        if (lightRef.current) {
+          gsap.to(lightRef.current, {
+            x: "-5vw",
+            scale: 1.05,
+            duration: 9,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+          });
+        }
+
+        // 2. Ultra-Premium Editorial Name Animation (Apple "Pro" Style)
+        // Staggered character loops can feel cheap or busy. A truly expensive feel 
+        // treats the typography as a solid, monumental object reacting to a slow light sweep.
+        
+        splitName.revert(); // Revert the characters back to a single solid block
+
+        if (nameRef.current) {
+          // Clear any leftover inline background styles from previous attempts
+          nameRef.current.style.backgroundImage = "none";
+          nameRef.current.style.color = "rgba(255,255,255,0.7)";
+          nameRef.current.style.backgroundClip = "border-box";
+          nameRef.current.style.WebkitBackgroundClip = "border-box";
+          
+          // A truly high-end editorial glow effect. Not bouncy, not shimmering. 
+          // Just a very slow, deep, subtle atmospheric breath of light.
+          gsap.fromTo(nameRef.current, {
+            textShadow: "0px 0px 0px rgba(255, 223, 153, 0)",
+            color: "rgba(255, 255, 255, 0.7)",
+          }, {
+            textShadow: "0px 10px 40px rgba(255, 223, 153, 0.5)",
+            color: "rgba(255, 255, 255, 1)",
+            duration: 4,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+          });
+        }
+      }
     });
 
-    // ── Accent word: gentle opacity pulse (no glow) ──
-    const accentWord = containerRef.current.querySelector(".ft-accent-word");
-    if (accentWord) {
-      gsap.fromTo(accentWord,
-        { opacity: 0.7 },
-        {
-          opacity: 1,
-          duration: 3,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-        }
-      );
-    }
+    // 1. Cinematic Character Reveal for Headers
+    tl.fromTo(splitLine1.chars, 
+      { y: 100, opacity: 0, rotateX: -80, filter: "blur(20px)", scale: 0.8 },
+      { y: 0, opacity: 1, rotateX: 0, filter: "blur(0px)", scale: 1, duration: 2, stagger: 0.04, ease: "expo.out" }
+    )
+    .fromTo(splitLine2.chars, 
+      { y: 100, opacity: 0, rotateX: -80, filter: "blur(20px)", scale: 0.8 },
+      { y: 0, opacity: 1, rotateX: 0, filter: "blur(0px)", scale: 1, duration: 2, stagger: 0.04, ease: "expo.out" },
+      "-=1.8"
+    )
+    // 2. The Living Light swells in the background
+    .fromTo(lightRef.current,
+      { opacity: 0, scale: 0.5, filter: "blur(0px)" },
+      { opacity: 0.25, scale: 1.2, filter: "blur(150px)", duration: 3, ease: "sine.out" },
+      "-=2"
+    )
+    // 3. Email CTA fades in sharply with letter spacing contraction
+    .fromTo(emailRef.current,
+      { opacity: 0, y: 30, letterSpacing: "0.5em", filter: "blur(10px)" },
+      { opacity: 1, y: 0, letterSpacing: "0.1em", filter: "blur(0px)", duration: 1.5, ease: "power3.out" },
+      "-=2"
+    )
+    // 4. Social Links blur and rise
+    .fromTo(linksRef.current?.children || [],
+      { opacity: 0, y: 40, rotateX: 45, filter: "blur(15px)" },
+      { opacity: 1, y: 0, rotateX: 0, filter: "blur(0px)", duration: 1.5, stagger: 0.15, ease: "expo.out" },
+      "-=1.5"
+    )
+    // 5. Massive anchor name reveals character by character from the deep background
+    .fromTo(splitName.chars,
+      { opacity: 0, y: 250, rotateX: 90, scale: 0.5, filter: "blur(30px)" },
+      { opacity: 1, y: 0, rotateX: 0, scale: 1, filter: "blur(0px)", duration: 3, stagger: 0.05, ease: "expo.out" },
+      "-=1.8"
+    );
 
-    // ── Self-writing loop: triggered when footer scrolls into view ──
-    const allNameChars = containerRef.current.querySelectorAll(".ft-char");
-    if (allNameChars.length > 0) {
-      // Start fully visible by default
-      gsap.set(allNameChars, { clipPath: "inset(0 0% 0 0)" });
-
-      // Build the writing timeline (paused — started by ScrollTrigger after delay)
-      // Every repeat will have a 10-second delay
-      const writeTl = gsap.timeline({ repeat: -1, repeatDelay: 10, paused: true });
-
-      // 1. Erase: letters clip away from right-to-left
-      writeTl.to(allNameChars, {
-        clipPath: "inset(0 0 0 100%)",
-        stagger: { each: 0.08, from: "end" },
-        duration: 0.4,
-        ease: "power2.in",
-      }, 0);
-
-      // 2. Instantly reset to hidden on the left
-      writeTl.set(allNameChars, { clipPath: "inset(0 100% 0 0)" });
-
-      // 3. Write in: letters reveal left-to-right
-      writeTl.to(allNameChars, {
-        clipPath: "inset(0 0% 0 0)",
-        stagger: 0.12,
-        duration: 0.6,
-        ease: "power3.out",
-      }, "+=0.25"); // subtle delay after full erase before writing back in
-
-      // Start the loop after 10 seconds when the section enters the viewport
-      ScrollTrigger.create({
-        trigger: containerRef.current,
-        start: "top 80%",
-        onEnter: () => {
-          gsap.delayedCall(10, () => writeTl.play());
-        },
-        once: true,
-      });
-    }
-
+    return () => {
+      splitLine1.revert();
+      splitLine2.revert();
+      splitName.revert();
+    };
   }, { scope: containerRef });
 
-  const firstName = "SHIVAM";
-  const lastName = "DIWAN";
-
   return (
-    <section
-      id="contact"
+    <section 
+      id="contact" 
       ref={containerRef}
-      className="relative w-full h-[100dvh] flex flex-col bg-transparent z-10 overflow-hidden"
+      className="relative min-h-screen bg-[#000000] text-white overflow-hidden flex flex-col justify-between pt-32 perspective-[2000px]"
     >
-      {/* Shader BG */}
-      <FooterShaderBg />
+      {/* --- Ambient Background --- */}
+      <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none mix-blend-screen" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
 
-      {/* Ambient glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-[radial-gradient(circle,rgba(232,168,74,0.012)_0%,transparent_75%)] rounded-full blur-[120px] pointer-events-none z-0" />
+      {/* The Ambient Breathing Light */}
+      <div 
+        ref={ambientLightRef}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[100vh] bg-accent/20 rounded-[100%] opacity-5 blur-[180px] pointer-events-none z-0 mix-blend-screen"
+      />
 
-      {/* ═══════════════════════════════════════════════
-          EDITORIAL FOOTER — Full Viewport
-          3 vertical zones: Tagline → Giant Name → Info Grid
-         ═══════════════════════════════════════════════ */}
+      {/* --- The Living Light (Cinematic Spotlight) --- */}
+      <div 
+        ref={lightRef}
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/3 w-[90vw] md:w-[60vw] h-[70vh] bg-[#ffaa40] rounded-[100%] opacity-20 blur-[120px] md:blur-[150px] pointer-events-none z-0 mix-blend-screen"
+        style={{ willChange: 'transform, opacity' }}
+      ></div>
 
-      <div className="relative z-10 flex flex-col h-full w-full max-w-[1800px] mx-auto px-6 md:px-12 lg:px-16 xl:px-20">
-
-        {/* ─── ZONE 1: Tagline + top accent ─── */}
-        <div className="flex-shrink-0 pt-12 md:pt-16 lg:pt-20">
-          <div
-            className="ft-tagline flex items-start justify-between"
-            style={{ opacity: 0, willChange: "transform, opacity, filter" }}
-          >
-            <p className="text-2xl sm:text-3xl md:text-4xl lg:text-[3.5vw] xl:text-[3vw] font-serif font-light text-text-secondary/80 leading-[1.15] max-w-2xl lg:max-w-3xl">
-              Let&apos;s craft something{" "}
-              <span className="ft-accent-word italic text-accent">extraordinary</span>
-              <span className="text-accent/60">.</span>
-            </p>
-
-            {/* Availability indicator — elegant editorial style */}
-            <div className="hidden md:flex items-center gap-3 pt-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent/70 shadow-[0_0_6px_rgba(232,168,74,0.4)]" />
-              <span className="font-serif italic text-sm text-accent/60 tracking-wide">
-                Open to new projects
-              </span>
-            </div>
+      {/* --- Cinematic Center (Main CTA) --- */}
+      <div className="relative z-10 px-4 w-full flex-grow flex flex-col items-center justify-center pb-12 md:pb-20">
+        
+        <div className="text-center flex flex-col items-center gap-2">
+          {/* Cinematic text wrappers */}
+          <div className="pb-4 transform-style-3d">
+            <span 
+              ref={line1Ref} 
+              className="block text-[12vw] md:text-[9vw] lg:text-[7.5vw] font-serif uppercase tracking-tighter leading-[0.85] italic text-white/40 font-light pr-8 md:pr-16 origin-bottom-left"
+            >
+              CRAFTING
+            </span>
+          </div>
+          <div className="pb-4 transform-style-3d">
+            <span 
+              ref={line2Ref} 
+              className="block text-[12vw] md:text-[9vw] lg:text-[7.5vw] font-serif uppercase tracking-tighter leading-[0.85] text-[#ffdf99] origin-bottom-left"
+            >
+              THE EXTRAORDINARY.
+            </span>
           </div>
         </div>
 
-        {/* ─── ZONE 2: Giant Name — centered vertically ─── */}
-        <div
-          className="flex-1 flex flex-col items-start justify-center select-none w-full gap-0"
-          style={{ perspective: "1200px" }}
+        <a 
+          ref={emailRef}
+          href="mailto:shivamdiwan1500@gmail.com"
+          className="mt-12 md:mt-16 group relative inline-flex items-center justify-center cursor-none p-4"
+          data-interactive="true"
         >
-          {/* First name — full width, left-aligned with inline paddingLeft shift */}
-          <div className="w-full overflow-visible" style={{ lineHeight: '1.1', marginBottom: '-2.5vw', paddingLeft: '8vw' }}>
-            <span className="block font-serif font-light tracking-wider text-[16vw] sm:text-[15vw] md:text-[14vw] lg:text-[13vw] text-text-primary/95">
-              {firstName.split("").map((ch, i) => (
-                <span
-                  key={`f-${i}`}
-                  className="ft-char ft-char-first inline-block"
-                  style={{
-                    willChange: "clip-path",
-                    padding: "0.12em 0.15em",
-                    margin: "0 -0.15em",
-                  }}
-                >
-                  {ch}
-                </span>
-              ))}
-            </span>
-          </div>
+          <span className="text-lg md:text-2xl font-mono tracking-widest uppercase text-white/50 group-hover:text-[#ffdf99] transition-colors duration-500 z-10 relative">
+            START A CONVERSATION
+          </span>
+          <span className="absolute bottom-2 left-1/2 w-0 h-[1px] bg-[#ffdf99] group-hover:w-full group-hover:left-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] z-0"></span>
+        </a>
+      </div>
 
-          {/* Hairline between names */}
-          <div
-            className="ft-line h-[1px] w-full my-0 origin-left relative"
-            style={{
-              background: "linear-gradient(90deg, rgba(232,168,74,0.3) 0%, rgba(255,255,255,0.08) 50%, transparent 100%)",
-              willChange: "transform",
-            }}
-          >
-            <div className="ft-particle absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-accent blur-[1px] shadow-[0_0_8px_#E8A84A] opacity-0" />
-          </div>
-
-          {/* Last name — offset right, outlined italic with inline paddingRight shift */}
-          <div className="ft-last-name-block w-full overflow-visible text-right" style={{ lineHeight: '1.1', marginTop: '-2.5vw', paddingRight: '15vw' }}>
-            <span className="inline-block font-serif font-light italic tracking-wider text-[16vw] sm:text-[15vw] md:text-[14vw] lg:text-[13vw] text-transparent [-webkit-text-stroke:1.5px_rgba(255,255,255,0.18)]">
-              {lastName.split("").map((ch, i) => (
-                <span
-                  key={`l-${i}`}
-                  className="ft-char ft-char-last inline-block"
-                  style={{
-                    willChange: "clip-path",
-                    padding: "0.12em 0.25em",
-                    margin: "0 -0.25em",
-                  }}
-                >
-                  {ch}
+      {/* --- Editorial Bottom Section --- */}
+      <div className="w-full mt-auto relative z-10 flex flex-col">
+        
+        {/* High-End Editorial Social Links Row */}
+        <div 
+          ref={linksRef}
+          className="w-full border-t border-b border-white/10 flex flex-col md:flex-row justify-between items-center py-6 md:py-8 px-6 md:px-24 lg:px-32 mb-8 md:mb-12 transform-style-3d"
+        >
+          {SOCIAL_LINKS.map((link, i) => {
+            const isInternal = link.href.startsWith('/');
+            const LinkWrapper = isInternal ? Link : 'a';
+            const extraProps = isInternal ? {} : { target: "_blank", rel: "noreferrer" };
+            
+            return (
+            <LinkWrapper 
+              key={link.label}
+              href={link.href as any}
+              {...extraProps}
+              className="relative flex items-center justify-center group cursor-none w-full md:w-auto py-4 md:py-0 border-b border-white/5 md:border-none last:border-none"
+              data-interactive="true"
+            >
+              <div className="relative px-2 py-1 pr-4">
+                <span className="block text-2xl md:text-3xl lg:text-4xl font-serif italic text-white/50 group-hover:text-white transition-colors duration-500 ease-out relative z-10">
+                  {link.label}
                 </span>
-              ))}
-            </span>
-          </div>
+                <span className="absolute bottom-1 left-0 w-full h-[1px] bg-[#ffdf99] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] z-0" />
+              </div>
+            </LinkWrapper>
+            );
+          })}
         </div>
 
-        {/* ─── ZONE 3: Editorial Info Grid — bottom anchored ─── */}
-        <div className="flex-shrink-0 pb-6 md:pb-10">
-
-          {/* Divider */}
-          <div
-            className="ft-line h-[1px] w-full mb-8 md:mb-10 origin-left relative"
-            style={{
-              background: "linear-gradient(90deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
-              willChange: "transform",
-            }}
+        {/* Massive Editorial Name */}
+        <div className="w-full text-center px-4 mb-0 transform-style-3d cursor-default">
+          <h1 
+            ref={nameRef}
+            className="text-[13vw] sm:text-[14vw] md:text-[15.5vw] leading-[0.8] font-serif tracking-tighter uppercase whitespace-nowrap text-white/90 origin-center"
+            style={{ willChange: 'text-shadow, color' }}
           >
-            <div className="ft-particle absolute top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-white/40 blur-[0.5px] shadow-[0_0_4px_rgba(255,255,255,0.3)] opacity-0" />
-          </div>
-
-          {/* Info columns — spread across full width */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-y-8 gap-x-8 md:gap-x-6 mb-8 md:mb-10">
-
-            {/* Col 1: Email */}
-            <div className="ft-col flex flex-col gap-4" style={{ opacity: 0, willChange: "transform, opacity, filter" }}>
-              <span className="font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-accent/60 uppercase">Email</span>
-              <a
-                href="mailto:hello@shivamdiwan.com"
-                className="font-sans text-sm md:text-base text-text-secondary/70 hover:text-white transition-colors duration-500 cursor-none leading-relaxed"
-                data-interactive="true"
-              >
-                hello@shivamdiwan.com
-              </a>
-            </div>
-
-            {/* Col 2: Socials */}
-            <div className="ft-col flex flex-col gap-4" style={{ opacity: 0, willChange: "transform, opacity, filter" }}>
-              <span className="font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-accent/60 uppercase">Social</span>
-              <div className="flex flex-col gap-2">
-                {[
-                  { href: "https://github.com/DShivam9", label: "GitHub" },
-                  { href: "https://linkedin.com", label: "LinkedIn" },
-                  { href: "https://twitter.com", label: "Twitter / X" },
-                ].map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-sans text-sm md:text-base text-text-secondary/70 hover:text-white transition-colors duration-500 cursor-none"
-                    data-interactive="true"
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {/* Col 3: Location */}
-            <div className="ft-col flex flex-col gap-4" style={{ opacity: 0, willChange: "transform, opacity, filter" }}>
-              <span className="font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-accent/60 uppercase">Location</span>
-              <span className="font-sans text-sm md:text-base text-text-secondary/70 leading-relaxed">
-                India
-              </span>
-            </div>
-
-            {/* Col 4: Expertise */}
-            <div className="ft-col hidden md:flex flex-col gap-4" style={{ opacity: 0, willChange: "transform, opacity, filter" }}>
-              <span className="font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-accent/60 uppercase">Focus</span>
-              <div className="flex flex-col gap-2">
-                <span className="font-sans text-sm md:text-base text-text-secondary/70">3D & WebGL</span>
-                <span className="font-sans text-sm md:text-base text-text-secondary/70">Interactive Design</span>
-                <span className="font-sans text-sm md:text-base text-text-secondary/70">Full-Stack Engineering</span>
-              </div>
-            </div>
-
-            {/* Col 5: CTA — right-aligned on desktop */}
-            <div className="ft-col col-span-2 sm:col-span-1 flex flex-col gap-4 sm:items-end" style={{ opacity: 0, willChange: "transform, opacity, filter" }}>
-              <span className="font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-accent/60 uppercase">Start a project</span>
-              <a
-                href="mailto:hello@shivamdiwan.com"
-                className="group flex items-center gap-4 cursor-none"
-                data-interactive="true"
-              >
-                <span className="font-serif italic text-lg md:text-xl lg:text-2xl text-text-secondary/50 group-hover:text-accent transition-colors duration-700">
-                  Get in touch
-                </span>
-                <span className="w-10 h-10 md:w-11 md:h-11 rounded-full border border-white/10 group-hover:border-accent/40 flex items-center justify-center transition-all duration-700">
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 10 10"
-                    fill="none"
-                    className="text-text-tertiary/40 group-hover:text-accent transition-all duration-700"
-                    style={{ transition: "color 700ms cubic-bezier(0.16,1,0.3,1), transform 700ms cubic-bezier(0.16,1,0.3,1)" }}
-                  >
-                    <path d="M2 1H9V8M9 1L1 9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-              </a>
-            </div>
-          </div>
-
-          {/* Bottom bar — copyright */}
-          <div
-            className="ft-bottom flex flex-col sm:flex-row justify-between items-center gap-2 border-t border-white/[0.04] pt-5"
-            style={{ opacity: 0, willChange: "transform, opacity" }}
-          >
-            <span className="font-mono text-[8px] md:text-[9px] tracking-[0.22em] text-text-tertiary/35 uppercase">
-              © {new Date().getFullYear()} Shivam Diwan. All rights reserved.
-            </span>
-            <span className="font-mono text-[8px] md:text-[9px] tracking-[0.22em] text-text-tertiary/35 uppercase">
-              Designed & Developed in India
-            </span>
-          </div>
+            SHIVAM DIWAN
+          </h1>
         </div>
 
       </div>
+      
     </section>
   );
 }

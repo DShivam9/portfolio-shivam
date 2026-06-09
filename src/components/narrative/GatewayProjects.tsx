@@ -17,16 +17,26 @@ export default function GatewayProjects() {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
-        start: "top 85%",
-        end: "center 45%",
-        scrub: true
+        start: "top top",
+        end: "+=150%",
+        pin: true,
+        scrub: 1
       }
     });
 
+    // Phase 1: Enter
     tl.fromTo(textRef.current,
-      { opacity: 0, scale: 1.05, y: -40, filter: "blur(12px)" },
+      { opacity: 0, scale: 0.95, y: 80, filter: "blur(16px)" },
       { opacity: 1, scale: 1, y: 0, filter: "blur(0px)", ease: "power2.out", duration: 1 },
       0
+    );
+
+    // Phase 2: Hold
+    tl.to(textRef.current, { opacity: 1, duration: 0.5 });
+
+    // Phase 3: Exit
+    tl.to(textRef.current,
+      { opacity: 0, scale: 1.05, y: -80, filter: "blur(16px)", ease: "power2.in", duration: 1 }
     );
 
   }, { scope: containerRef });
@@ -34,7 +44,7 @@ export default function GatewayProjects() {
   return (
     <section 
       ref={containerRef}
-      className="relative w-full min-h-[70vh] flex flex-col items-center justify-center bg-transparent z-10"
+      className="relative w-full min-h-screen flex flex-col items-center justify-center bg-transparent z-10"
     >
       <div ref={textRef} className="flex flex-col items-center text-center z-10" style={{ willChange: 'transform, opacity, filter' }}>
         <h2 className="text-display text-text-primary tracking-tight leading-[1.1]">
