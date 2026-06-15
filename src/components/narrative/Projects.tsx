@@ -10,40 +10,7 @@ import SplitTextReveal from "../ui/SplitTextReveal";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const WORKS = [
-  {
-    id: "01",
-    title: "RetroRift",
-    description: "High-performance retro console emulation running entirely in the browser.",
-    image: "/projects/retrorift.png",
-    live: "https://www.retrorift.online/",
-    github: "https://github.com/DShivam9/RetroRift",
-  },
-  {
-    id: "02",
-    title: "SNIPCAST",
-    description: "Privacy-first code snippet image generator running local client processing.",
-    image: "/projects/snipcast.png",
-    live: "https://codesnippt.vercel.app",
-    github: "https://github.com/DShivam9/SNIPCAST",
-  },
-  {
-    id: "03",
-    title: "HEIC Studio",
-    description: "Local drag-and-drop HEIC image conversion directly in the browser.",
-    image: "/projects/heicstudio.png",
-    live: "https://www.heicstudio.space/",
-    github: "https://github.com/DShivam9/HEIC-STUDIO",
-  },
-  {
-    id: "04",
-    title: "Campusly",
-    description: "Decentralized school infrastructure orchestration with real-time mapping arrays.",
-    image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1200&auto=format&fit=crop",
-    live: "#",
-    github: "#",
-  }
-];
+import { HOME_PROJECTS as WORKS } from "@/constants/projects";
 
 export default function Projects() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -154,25 +121,29 @@ export default function Projects() {
                 </SplitTextReveal>
 
                 <div className="flex items-center gap-8 mt-2">
-                  <a
-                    href={work.live}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group relative flex items-center gap-3 text-[11px] font-mono tracking-[0.2em] uppercase text-white/80 hover:text-white transition-colors duration-500 py-3"
-                  >
-                    <span>View Project</span>
-                    <span className="w-4 h-[1px] bg-white/30 group-hover:bg-white group-hover:w-8 transition-all duration-500 ease-out"></span>
-                  </a>
+                  {work.live && work.live !== "#" && (
+                    <a
+                      href={work.live}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group relative flex items-center gap-3 text-[11px] font-mono tracking-[0.2em] uppercase text-white/80 hover:text-white transition-colors duration-500 py-3"
+                    >
+                      <span>View Project</span>
+                      <span className="w-4 h-[1px] bg-white/30 group-hover:bg-white group-hover:w-8 transition-all duration-500 ease-out"></span>
+                    </a>
+                  )}
 
-                  <a
-                    href={work.github}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group relative flex items-center gap-3 text-[11px] font-mono tracking-[0.2em] uppercase text-white/80 hover:text-white transition-colors duration-500 py-3"
-                  >
-                    <span>Source Code</span>
-                    <span className="w-4 h-[1px] bg-white/30 group-hover:bg-white group-hover:w-8 transition-all duration-500 ease-out"></span>
-                  </a>
+                  {work.github && work.github !== "#" && (
+                    <a
+                      href={work.github}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group relative flex items-center gap-3 text-[11px] font-mono tracking-[0.2em] uppercase text-white/80 hover:text-white transition-colors duration-500 py-3"
+                    >
+                      <span>Source Code</span>
+                      <span className="w-4 h-[1px] bg-white/30 group-hover:bg-white group-hover:w-8 transition-all duration-500 ease-out"></span>
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

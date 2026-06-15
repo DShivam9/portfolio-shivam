@@ -10,14 +10,19 @@ import SplitTextReveal from "../ui/SplitTextReveal";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const FocusPullPhoto = ({ src, alt }: { src: string, alt: string }) => {
+import Image from "next/image";
+
+const FocusPullPhoto = ({ src, alt, objectPositionClass = "object-center", aspectClass = "aspect-[4/5]" }: { src: string, alt: string, objectPositionClass?: string, aspectClass?: string }) => {
   return (
     <div className="photo-card-container relative w-full rounded-xl bg-[#020202] overflow-hidden group cursor-pointer">
-      <img 
-        src={src} 
-        alt={alt} 
-        className="w-full h-auto block rounded-xl relative z-10 opacity-70 grayscale-[40%] scale-100 group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
-      />
+      <div className={`relative w-full ${aspectClass}`}>
+        <Image 
+          src={src} 
+          alt={alt} 
+          fill
+          className={`object-cover ${objectPositionClass} rounded-xl relative z-10 opacity-70 grayscale-[40%] scale-100 group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]`}
+        />
+      </div>
       {/* Vignette that softens on hover */}
       <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.85)_100%)] pointer-events-none z-20 transition-opacity duration-[800ms] group-hover:opacity-60" />
       {/* Golden tint overlay */}
@@ -137,7 +142,7 @@ export default function About() {
           <div className="flex-1 min-w-0">
             <span className="drop-cap-letter float-left text-accent font-serif font-semibold text-7xl md:text-8xl leading-none mr-5 mt-2">I</span>
             <SplitTextReveal animation="scrub" type="words" className="font-light text-text-secondary text-xl md:text-2xl leading-loose tracking-wide max-w-2xl">
-              learn best by building. Every project I take on is an opportunity to <span className="text-accent font-medium">explore new technologies</span>, solve unfamiliar problems, and expand my understanding of how <span className="text-accent font-medium">great software</span> is made. Whether it's shipping a full-stack application, integrating modern tools and workflows, or refining a product through multiple iterations, I enjoy the process of <span className="text-accent font-medium">continuously improving</span> both the product and myself.
+              learn best by building. Every project I take on is an opportunity to <span className="text-accent font-medium">explore new technologies</span>, solve unfamiliar problems, and expand my understanding of how <span className="text-accent font-medium">great software</span> is made. Whether it&apos;s shipping a full-stack application, integrating modern tools and workflows, or refining a product through multiple iterations, I enjoy the process of <span className="text-accent font-medium">continuously improving</span> both the product and myself.
             </SplitTextReveal>
           </div>
           
@@ -154,7 +159,7 @@ export default function About() {
         </div>
 
         {/* ── Para 3 + Photo ── */}
-        <div className="self-stretch flex flex-col md:flex-row items-center gap-12 md:gap-24">
+        <div className="self-stretch flex flex-col md:flex-row items-start gap-12 md:gap-24">
           <div className="flex-1 min-w-0">
             <span className="drop-cap-letter float-left text-accent font-serif font-semibold text-7xl md:text-8xl leading-none mr-5 mt-2">W</span>
             <SplitTextReveal animation="scrub" type="words" className="font-light text-text-secondary text-xl md:text-2xl leading-loose tracking-wide max-w-2xl">
@@ -162,8 +167,8 @@ export default function About() {
             </SplitTextReveal>
           </div>
           
-          <div className="shrink-0 w-full max-w-[460px] md:max-w-[500px]">
-            <FocusPullPhoto src="/about/WhatsApp Image 2026-06-04 at 10.16.29 PM (1).jpeg" alt="Method" />
+          <div className="shrink-0 w-full max-w-[460px] md:max-w-[600px] mt-4">
+            <FocusPullPhoto src="/about/WhatsApp Image 2026-06-15 at 2.13.18 PM.jpeg" alt="Method" aspectClass="aspect-[16/9]" />
           </div>
         </div>
 
@@ -176,8 +181,8 @@ export default function About() {
             </SplitTextReveal>
           </div>
           
-          <div className="shrink-0 w-full max-w-[350px] md:max-w-[400px]">
-            <FocusPullPhoto src="/about/WhatsApp Image 2026-06-04 at 10.16.29 PM (2).jpeg" alt="Vision" />
+          <div className="shrink-0 w-full max-w-[400px] md:max-w-[480px]">
+            <FocusPullPhoto src="/about/WhatsApp Image 2026-06-04 at 10.16.29 PM (2).jpeg" alt="Vision" aspectClass="aspect-square" />
           </div>
         </div>
 

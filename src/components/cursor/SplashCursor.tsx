@@ -789,15 +789,33 @@ export default function SplashCursor({
     initFramebuffers();
     let lastUpdateTime = Date.now();
     let colorUpdateTimer = 0.0;
+    
+    // Performance optimization: stop rendering if cursor has been idle for a while
+    // The dye dissipates within ~2 seconds anyway, so 3s is safe.
+    let lastInteractionTime = Date.now();
+    const IDLE_TIMEOUT = 3000;
 
     function updateFrame() {
       if (!isActive) return;
       const dt = calcDeltaTime();
       if (resizeCanvas()) initFramebuffers();
       updateColors(dt);
+      
+      // Update interaction time if pointer moved
+      pointers.forEach(p => {
+        if (p.moved || p.down) {
+          lastInteractionTime = Date.now();
+        }
+      });
+      
       applyInputs();
-      step(dt);
-      render(null);
+      
+      // Only run simulation and render if not idle
+      if (Date.now() - lastInteractionTime < IDLE_TIMEOUT) {
+        step(dt);
+        render(null);
+      }
+      
       animationFrameId.current = requestAnimationFrame(updateFrame);
     }
 

@@ -5,80 +5,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Code, X } from "lucide-react";
 import gsap from "gsap";
-import Lenis from "lenis";
 import CustomCursor from "@/components/cursor/CustomCursor";
 import Ferrofluid from "@/components/ui/Ferrofluid";
 
-const ALL_PROJECTS = [
-  {
-    id: "01",
-    title: "Campusly",
-    description: "A scalable PERN stack campus management platform serving 4 distinct user roles. Features real-time GPS bus tracking and RBAC.",
-    tech: ["PostgreSQL", "Express", "React", "Node.js", "PostGIS", "Firebase", "Tailwind CSS"],
-    image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop",
-    video: "", 
-    live: "#",
-    github: "#",
-    category: "Full Stack"
-  },
-  {
-    id: "02",
-    title: "RetroRift",
-    description: "A browser-based platform to play classic retro games. Cinematic arcade-inspired UI built with WebGL and WebAssembly.",
-    tech: ["React", "Vite", "WebGL", "WebAssembly", "Tailwind CSS"],
-    image: "/projects/retrorift.png",
-    live: "https://www.retrorift.online/",
-    github: "https://github.com/DShivam9/RetroRift",
-    category: "Web App"
-  },
-  {
-    id: "03",
-    title: "SNIPCAST",
-    description: "Generate beautiful, share-ready images from your code snippets in seconds. Developer-first interface with Next.js 14.",
-    tech: ["Next.js", "TypeScript", "Tailwind CSS"],
-    image: "/projects/snipcast.png",
-    live: "https://codesnippt.vercel.app",
-    github: "https://github.com/DShivam9/SNIPCAST",
-    category: "Tool"
-  },
-  {
-    id: "04",
-    title: "HEIC Studio",
-    description: "Drag-and-drop tool to convert iPhone HEIC photos to JPG/PNG instantly. Client-side processing for privacy.",
-    tech: ["Next.js", "TypeScript", "Tailwind CSS"],
-    image: "/projects/heicstudio.png",
-    live: "https://www.heicstudio.space/",
-    github: "https://github.com/DShivam9/HEIC-STUDIO",
-    category: "Tool"
-  },
-  {
-    id: "05",
-    title: "WeatherEye",
-    description: "Real-time weather app with dynamic themes, dark mode, and animated visuals.",
-    tech: ["HTML", "CSS", "JavaScript", "OpenWeatherMap API"],
-    image: "https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?q=80&w=2065&auto=format&fit=crop",
-    live: "https://dshivam9.github.io/WeatherEye/",
-    github: "https://github.com/DShivam9/WeatherEye",
-    category: "Web App"
-  },
-  {
-    id: "06",
-    title: "OSCORP",
-    description: "Stunning 3D landing page with smooth motion interactions and scroll-driven cinematic experience.",
-    tech: ["HTML", "CSS", "JavaScript", "Spline 3D"],
-    image: "https://images.unsplash.com/photo-1614729939124-032f0b56c9ce?q=80&w=2069&auto=format&fit=crop",
-    live: "https://dshivam9.github.io/Immersive-Landing-Page/",
-    github: "https://github.com/DShivam9/Immersive-Landing-Page",
-    category: "3D Web"
-  }
-];
+import { ALL_PROJECTS } from "@/constants/projects";
 
 const FERROFLUID_COLORS = ['#E8A84A', '#78350f', '#000000'];
 
 export default function ProjectsPage() {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
+
   const pageRef = useRef<HTMLDivElement>(null);
 
   // GSAP Mount Sequence (Page Transition)
@@ -116,69 +53,9 @@ export default function ProjectsPage() {
     return () => ctx.revert();
   }, []);
 
-  // Lenis Smooth Scroll Setup
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.5,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      wheelMultiplier: 0.8,
-      touchMultiplier: 1.5,
-      lerp: 0.08,
-    });
+  // Removed local Lenis setup - now using global LenisProvider
 
-    const updateLenis = (time: number) => {
-      lenis.raf(time * 1000);
-    };
-    gsap.ticker.add(updateLenis);
 
-    return () => {
-      gsap.ticker.remove(updateLenis);
-      lenis.destroy();
-    };
-  }, []);
-
-  // Floating Image Tracker
-  useEffect(() => {
-    if (!imageContainerRef.current) return;
-
-    const xTo = gsap.quickTo(imageContainerRef.current, "x", { duration: 0.4, ease: "power3" });
-    const yTo = gsap.quickTo(imageContainerRef.current, "y", { duration: 0.4, ease: "power3" });
-
-    const moveImage = (e: MouseEvent) => {
-      // Offset by half the image size (384x256) to perfectly center the image on the cursor
-      xTo(e.clientX - 192);
-      yTo(e.clientY - 128);
-    };
-
-    window.addEventListener("mousemove", moveImage);
-    return () => window.removeEventListener("mousemove", moveImage);
-  }, []);
-
-  // Floating Image State Changes
-  useEffect(() => {
-    if (!imageContainerRef.current) return;
-    
-    if (activeIdx !== null) {
-      gsap.to(imageContainerRef.current, {
-        scale: 1,
-        opacity: 1,
-        duration: 0.5,
-        ease: "power3.out",
-        overwrite: "auto"
-      });
-    } else {
-      gsap.to(imageContainerRef.current, {
-        scale: 0.4,
-        opacity: 0,
-        duration: 0.4,
-        ease: "power3.in",
-        overwrite: "auto"
-      });
-    }
-  }, [activeIdx]);
 
   return (
     <main ref={pageRef} className="relative w-full min-h-screen bg-black text-text-primary selection:bg-accent selection:text-black overflow-x-hidden pt-32 pb-40">
@@ -217,30 +94,7 @@ export default function ProjectsPage() {
 
       <CustomCursor />
 
-      {/* Floating Image Reveal (Cursor Bound) */}
-      <div 
-        ref={imageContainerRef}
-        className="fixed top-0 left-0 w-[384px] aspect-video pointer-events-none z-0 opacity-0 scale-50 overflow-hidden"
-      >
-        {ALL_PROJECTS.map((p, i) => (
-          <div 
-            key={p.id} 
-            className="absolute inset-0 transition-opacity duration-500 ease-in-out"
-            style={{ opacity: activeIdx === i ? 1 : 0 }}
-          >
-            <Image
-              src={p.image}
-              alt={p.title}
-              fill
-              className="object-cover grayscale-[20%]"
-              sizes="384px"
-              priority
-            />
-            {/* Cinematic dark wash over the image */}
-            <div className="absolute inset-0 bg-black/10 mix-blend-overlay" />
-          </div>
-        ))}
-      </div>
+
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24">
         

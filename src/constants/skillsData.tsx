@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { IconType } from "react-icons";
 import {
   SiJavascript, SiTypescript, SiReact, SiNextdotjs, SiTailwindcss, SiHtml5, SiCss, SiVite, SiVercel,
@@ -49,13 +50,13 @@ export const SYSTEMS_DEVOPS: TechItem[] = [
   { id: "firebase", name: "Firebase (Firestore)", desc: "Adding user authentication and real-time database capabilities.", IconComponent: () => <IconWrapper Icon={SiFirebase} color="#FFCA28" /> },
   { id: "git", name: "Git", desc: "Tracking code changes and managing project versions locally.", IconComponent: () => <IconWrapper Icon={SiGit} color="#F05032" /> },
   { id: "github", name: "GitHub", desc: "Hosting code, collaborating with others, and automating deployments.", IconComponent: () => <IconWrapper Icon={SiGithub} /> },
-  { id: "cloudflare", name: "Cloudflare", desc: "Protecting websites and speeding them up using a global edge network.", IconComponent: () => <img src="/icons/cloudflare.svg" alt="Cloudflare" className="h-[24px] md:h-[30px] w-auto object-contain brightness-0 invert" /> }
+  { id: "cloudflare", name: "Cloudflare", desc: "Protecting websites and speeding them up using a global edge network.", IconComponent: () => <Image src="/icons/cloudflare.svg" alt="Cloudflare" width={30} height={30} className="h-[24px] md:h-[30px] w-auto object-contain brightness-0 invert" /> }
 ];
 
 export const INTELLIGENT_AGENTS: TechItem[] = [
-  { id: "claude", name: "Claude", desc: "My go-to AI assistant for writing code, debugging, and solving complex problems.", IconComponent: () => <img src="/icons/claude.svg" alt="Claude" className="h-[48px] md:h-[60px] w-auto object-contain brightness-0 invert" /> },
-  { id: "antigravity", name: "Google Antigravity", desc: "An advanced AI agent that pair-programs with me directly inside my workspace.", IconComponent: () => <img src="/icons/antigravity.svg" alt="Google Antigravity" className="h-[24px] md:h-[30px] w-auto object-contain brightness-0 invert" /> },
-  { id: "gemini", name: "Google Gemini", desc: "A powerful AI model I use for deep reasoning and multimodal analysis.", IconComponent: () => <img src="/icons/google-gemini.svg" alt="Google Gemini" className="h-[24px] md:h-[30px] w-auto object-contain brightness-0 invert" /> },
-  { id: "manus", name: "Manus", desc: "An autonomous AI agent that handles long-running research and complex workflows.", IconComponent: () => <img src="/icons/manus.svg" alt="Manus" className="h-[24px] md:h-[30px] w-auto object-contain brightness-0 invert" /> },
-  { id: "shadcn", name: "Shadcn UI", desc: "A collection of beautifully designed, fully customizable UI components.", IconComponent: () => <img src="/icons/shadcn-ui.svg" alt="Shadcn UI" className="h-[24px] md:h-[30px] w-auto object-contain brightness-0 invert" /> }
+  { id: "claude", name: "Claude", desc: "My go-to AI assistant for writing code, debugging, and solving complex problems.", IconComponent: () => <Image src="/icons/claude.svg" alt="Claude" width={60} height={60} className="h-[48px] md:h-[60px] w-auto object-contain brightness-0 invert" /> },
+  { id: "antigravity", name: "Google Antigravity", desc: "An advanced AI agent that pair-programs with me directly inside my workspace.", IconComponent: () => <Image src="/icons/antigravity.svg" alt="Google Antigravity" width={30} height={30} className="h-[24px] md:h-[30px] w-auto object-contain brightness-0 invert" /> },
+  { id: "gemini", name: "Google Gemini", desc: "A powerful AI model I use for deep reasoning and multimodal analysis.", IconComponent: () => <Image src="/icons/google-gemini.svg" alt="Google Gemini" width={30} height={30} className="h-[24px] md:h-[30px] w-auto object-contain brightness-0 invert" /> },
+  { id: "manus", name: "Manus", desc: "An autonomous AI agent that handles long-running research and complex workflows.", IconComponent: () => <Image src="/icons/manus.svg" alt="Manus" width={30} height={30} className="h-[24px] md:h-[30px] w-auto object-contain brightness-0 invert" /> },
+  { id: "shadcn", name: "Shadcn UI", desc: "A collection of beautifully designed, fully customizable UI components.", IconComponent: () => <Image src="/icons/shadcn-ui.svg" alt="Shadcn UI" width={30} height={30} className="h-[24px] md:h-[30px] w-auto object-contain brightness-0 invert" /> }
 ];

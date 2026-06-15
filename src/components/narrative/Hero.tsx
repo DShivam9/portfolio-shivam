@@ -269,13 +269,13 @@ export default function Hero() {
 
         {/* SOCIAL LINKS - Pinned to sides */}
         <div className="absolute top-1/2 -translate-y-1/2 left-8 md:left-12 flex flex-col gap-8 text-[10px] tracking-[0.3em] uppercase text-text-secondary font-light mix-blend-difference pointer-events-auto z-20">
-          <a href="#" className="reveal-on-scroll opacity-0 hover:text-accent transition-colors cursor-none [writing-mode:vertical-rl] rotate-180" data-interactive="true" data-cursor-type="social">Resume</a>
-          <a href="#" className="reveal-on-scroll opacity-0 hover:text-accent transition-colors cursor-none [writing-mode:vertical-rl] rotate-180" data-interactive="true" data-cursor-type="social">LinkedIn</a>
+          <a href="/resume" className="reveal-on-scroll opacity-0 hover:text-accent transition-colors cursor-none [writing-mode:vertical-rl] rotate-180" data-interactive="true" data-cursor-type="social">Resume</a>
+          <a href="https://www.linkedin.com/in/shivam-diwan-84a1b9342/" target="_blank" rel="noreferrer noopener" className="reveal-on-scroll opacity-0 hover:text-accent transition-colors cursor-none [writing-mode:vertical-rl] rotate-180" data-interactive="true" data-cursor-type="social">LinkedIn</a>
         </div>
         
         <div className="absolute top-1/2 -translate-y-1/2 right-8 md:right-12 flex flex-col gap-8 text-[10px] tracking-[0.3em] uppercase text-text-secondary font-light mix-blend-difference pointer-events-auto z-20">
-          <a href="#" className="reveal-on-scroll opacity-0 hover:text-accent transition-colors cursor-none [writing-mode:vertical-rl]" data-interactive="true" data-cursor-type="social">GitHub</a>
-          <a href="#" className="reveal-on-scroll opacity-0 hover:text-accent transition-colors cursor-none [writing-mode:vertical-rl]" data-interactive="true" data-cursor-type="social">Email</a>
+          <a href="https://github.com/DShivam9" target="_blank" rel="noreferrer noopener" className="reveal-on-scroll opacity-0 hover:text-accent transition-colors cursor-none [writing-mode:vertical-rl]" data-interactive="true" data-cursor-type="social">GitHub</a>
+          <a href="mailto:shivamdiwan1500@gmail.com" className="reveal-on-scroll opacity-0 hover:text-accent transition-colors cursor-none [writing-mode:vertical-rl]" data-interactive="true" data-cursor-type="social">Email</a>
         </div>
 
 

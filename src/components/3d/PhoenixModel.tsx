@@ -1,83 +1,10 @@
 "use client";
 
-import { useRef, useMemo, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
 import { useScrollStore } from "@/store/scrollStore";
-
-const EMBER_COUNT = 200;
-
-function MagicalEmbers({ birdRef }: { birdRef: React.RefObject<THREE.Group | null> }) {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
-  
-  const particles = useMemo(() => {
-    return Array.from({ length: EMBER_COUNT }, () => ({
-      position: new THREE.Vector3(0, -1000, 0),
-      velocity: new THREE.Vector3(),
-      life: 0,
-      maxLife: Math.random() * 2 + 1.0, 
-      scale: Math.random() * 0.08 + 0.02
-    }));
-  }, []);
-
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-
-  useFrame((state, delta) => {
-    if (!meshRef.current || !birdRef.current) return;
-
-    const safeDelta = Math.min(delta, 0.1);
-
-    for (let i = 0; i < 2; i++) {
-      const deadParticle = particles.find(p => p.life <= 0);
-      if (deadParticle) {
-        const birdPos = new THREE.Vector3();
-        birdRef.current.getWorldPosition(birdPos);
-        
-        deadParticle.position.copy(birdPos).add(new THREE.Vector3(
-          (Math.random() - 0.5) * 3.0,
-          (Math.random() - 0.5) * 1.5 - 1.0,
-          (Math.random() - 0.5) * 3.0
-        ));
-        
-        deadParticle.velocity.set(
-          (Math.random() - 0.5) * 1.5,
-          -(Math.random() * 2.0 + 1.0), 
-          (Math.random() - 0.5) * 1.5
-        );
-        deadParticle.life = deadParticle.maxLife;
-      }
-    }
-
-    particles.forEach((p, i) => {
-      if (p.life > 0) {
-        p.life -= safeDelta;
-        p.position.addScaledVector(p.velocity, safeDelta);
-        
-        dummy.position.copy(p.position);
-        
-        const progress = p.life / p.maxLife;
-        const scale = p.scale * Math.pow(progress, 0.5); 
-        dummy.scale.set(scale, scale, scale);
-        dummy.updateMatrix();
-        meshRef.current!.setMatrixAt(i, dummy.matrix);
-      } else {
-        dummy.position.set(0, -1000, 0);
-        dummy.updateMatrix();
-        meshRef.current!.setMatrixAt(i, dummy.matrix);
-      }
-    });
-
-    meshRef.current.instanceMatrix.needsUpdate = true;
-  });
-
-  return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, EMBER_COUNT]}>
-      <sphereGeometry args={[1, 4, 4]} />
-      <meshBasicMaterial color="#E8A84A" transparent opacity={0.6} blending={THREE.AdditiveBlending} />
-    </instancedMesh>
-  );
-}
 
 export default function PhoenixModel() {
   const { scene, animations } = useGLTF("/models/phoenix_bird/scene.gltf");
@@ -85,10 +12,6 @@ export default function PhoenixModel() {
   const birdMesh = useRef<THREE.Group>(null);
   const group = useRef<THREE.Group>(null);
   const maxProgressRef = useRef(0);
-  
-  // Animation state refs for manual ping-pong
-  const animTimeRef = useRef(0);
-  const animDirRef = useRef(1);
 
   useEffect(() => {
     if (actions && Object.keys(actions).length > 0) {

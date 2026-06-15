@@ -23,8 +23,9 @@ export default function Contact() {
   const line2Ref = useRef<HTMLSpanElement>(null);
   const emailRef = useRef<HTMLAnchorElement>(null);
   const linksRef = useRef<HTMLDivElement>(null);
-  const nameRef = useRef<HTMLHeadingElement>(null);
+  const nameRef = useRef<HTMLDivElement>(null);
   const lightRef = useRef<HTMLDivElement>(null);
+  const turbulenceRef = useRef<SVGFETurbulenceElement>(null);
 
   // Ref for the ambient moving light
   const ambientLightRef = useRef<HTMLDivElement>(null);
@@ -32,12 +33,11 @@ export default function Contact() {
   useGSAP(() => {
     // HIGH-END EDITORIAL CINEMATIC REVEAL
     
-    if (!line1Ref.current || !line2Ref.current || !nameRef.current) return;
+    if (!line1Ref.current || !line2Ref.current) return;
 
     // Split texts into characters for cinematic staggering
     const splitLine1 = new SplitType(line1Ref.current, { types: 'chars' });
     const splitLine2 = new SplitType(line2Ref.current, { types: 'chars' });
-    const splitName = new SplitType(nameRef.current, { types: 'chars' });
     
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -73,33 +73,21 @@ export default function Contact() {
           });
         }
 
-        // 2. Ultra-Premium Editorial Name Animation (Apple "Pro" Style)
-        // Staggered character loops can feel cheap or busy. A truly expensive feel 
-        // treats the typography as a solid, monumental object reacting to a slow light sweep.
-        
-        splitName.revert(); // Revert the characters back to a single solid block
-
-        if (nameRef.current) {
-          // Clear any leftover inline background styles from previous attempts
-          nameRef.current.style.backgroundImage = "none";
-          nameRef.current.style.color = "rgba(255,255,255,0.7)";
-          nameRef.current.style.backgroundClip = "border-box";
-          nameRef.current.style.webkitBackgroundClip = "border-box";
-          
-          // A truly high-end editorial glow effect. Not bouncy, not shimmering. 
-          // Just a very slow, deep, subtle atmospheric breath of light.
-          gsap.fromTo(nameRef.current, {
-            textShadow: "0px 0px 0px rgba(255, 223, 153, 0)",
-            color: "rgba(255, 255, 255, 0.7)",
-          }, {
-            textShadow: "0px 10px 40px rgba(255, 223, 153, 0.5)",
-            color: "rgba(255, 255, 255, 1)",
-            duration: 4,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut"
-          });
-        }
+        // 2. Ethereal Fog Animation
+        const filterProxy = { value: 0.01 };
+        gsap.to(filterProxy, {
+          value: 0.016,
+          duration: 25,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          onUpdate: () => {
+            if (turbulenceRef.current) {
+              // Create a slow, morphing smoke/fog effect
+              turbulenceRef.current.setAttribute("baseFrequency", `${filterProxy.value} ${filterProxy.value * 0.8}`);
+            }
+          }
+        });
       }
     });
 
@@ -131,17 +119,16 @@ export default function Contact() {
       { opacity: 1, y: 0, rotateX: 0, filter: "blur(0px)", duration: 1.5, stagger: 0.15, ease: "expo.out" },
       "-=1.5"
     )
-    // 5. Massive anchor name reveals character by character from the deep background
-    .fromTo(splitName.chars,
+    // 5. Massive anchor name reveals from the deep background
+    .fromTo(nameRef.current,
       { opacity: 0, y: 250, rotateX: 90, scale: 0.5, filter: "blur(30px)" },
-      { opacity: 1, y: 0, rotateX: 0, scale: 1, filter: "blur(0px)", duration: 3, stagger: 0.05, ease: "expo.out" },
+      { opacity: 1, y: 0, rotateX: 0, scale: 1, filter: "blur(0px)", duration: 3, ease: "expo.out" },
       "-=1.8"
     );
 
     return () => {
       splitLine1.revert();
       splitLine2.revert();
-      splitName.revert();
     };
   }, { scope: containerRef });
 
@@ -192,12 +179,14 @@ export default function Contact() {
 
         <a 
           ref={emailRef}
-          href="mailto:shivamdiwan1500@gmail.com"
-          className="mt-12 md:mt-16 group relative inline-flex items-center justify-center cursor-none p-4"
+          href="https://mail.google.com/mail/?view=cm&fs=1&to=shivamdiwan1500@gmail.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-32 md:mt-40 lg:mt-48 group relative inline-flex items-center justify-center cursor-none p-4"
           data-interactive="true"
         >
           <span className="text-lg md:text-2xl font-mono tracking-widest uppercase text-white/50 group-hover:text-[#ffdf99] transition-colors duration-500 z-10 relative">
-            START A CONVERSATION
+            GET IN TOUCH
           </span>
           <span className="absolute bottom-2 left-1/2 w-0 h-[1px] bg-[#ffdf99] group-hover:w-full group-hover:left-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] z-0"></span>
         </a>
@@ -209,7 +198,7 @@ export default function Contact() {
         {/* High-End Editorial Social Links Row */}
         <div 
           ref={linksRef}
-          className="w-full border-t border-b border-white/10 flex flex-col md:flex-row justify-between items-center py-6 md:py-8 px-6 md:px-24 lg:px-32 mb-8 md:mb-12 transform-style-3d"
+          className="relative z-30 w-full border-t border-b border-white/10 flex flex-col md:flex-row justify-between items-center py-6 md:py-8 px-6 md:px-24 lg:px-32 mb-8 md:mb-12 transform-style-3d"
         >
           {SOCIAL_LINKS.map((link, i) => {
             const isInternal = link.href.startsWith('/');
@@ -235,16 +224,59 @@ export default function Contact() {
           })}
         </div>
 
-        {/* Massive Editorial Name */}
-        <div className="w-full text-center px-4 mb-0 transform-style-3d cursor-default">
-          <h1 
-            ref={nameRef}
-            className="text-[13vw] sm:text-[14vw] md:text-[15.5vw] leading-[0.8] font-serif tracking-tighter uppercase whitespace-nowrap text-white/90 origin-center"
-            style={{ willChange: 'text-shadow, color' }}
-          >
-            SHIVAM DIWAN
-          </h1>
+        {/* Massive Editorial Name with Ethereal Fog Filter & Parallax */}
+        <div className="w-full flex justify-center px-4 mb-0 transform-style-3d cursor-default py-8 perspective-[1500px] pointer-events-none">
+          <div className="relative inline-block transform-style-3d origin-center pointer-events-none" ref={nameRef}>
+            {/* Base Layer: Ghostly Architectural Skeleton */}
+            <h1 
+              className="text-[13vw] sm:text-[14vw] md:text-[15.5vw] leading-[0.8] font-serif tracking-tighter uppercase whitespace-nowrap origin-center opacity-30"
+              style={{ 
+                color: "transparent", 
+                WebkitTextStroke: "1px rgba(255,255,255,0.8)" 
+              }}
+            >
+              SHIVAM DIWAN
+            </h1>
+            
+            {/* Fog Layer: Solid white that slowly dissolves to reveal the skeleton */}
+            <h1 
+              className="absolute inset-0 text-[13vw] sm:text-[14vw] md:text-[15.5vw] leading-[0.8] font-serif tracking-tighter uppercase whitespace-nowrap text-white origin-center"
+              style={{ filter: "url(#ethereal-fog-filter)" }}
+            >
+              SHIVAM DIWAN
+            </h1>
+          </div>
         </div>
+
+        {/* SVG Filter Definition for Ethereal Fog */}
+        <svg width="0" height="0" className="absolute pointer-events-none">
+          <filter id="ethereal-fog-filter" colorInterpolationFilters="sRGB">
+            <feTurbulence 
+              ref={turbulenceRef}
+              type="fractalNoise" 
+              baseFrequency="0.01 0.008" 
+              numOctaves="4" 
+              seed="2" 
+              result="noise"
+            />
+            {/* Softer, silkier contrast matrix for the fog */}
+            <feColorMatrix
+              type="matrix"
+              values="1 0 0 0 0  
+                      0 1 0 0 0  
+                      0 0 1 0 0  
+                      0 0 0 1.8 -0.3" 
+              in="noise"
+              result="alphaMap"
+            />
+            {/* Mask the original text with the generated fog alpha */}
+            <feComposite 
+              operator="in" 
+              in="SourceGraphic" 
+              in2="alphaMap" 
+            />
+          </filter>
+        </svg>
 
       </div>
       
