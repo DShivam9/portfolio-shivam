@@ -85,7 +85,7 @@ export default function ResumePage() {
         </Link>
 
         <a 
-          href="/Shivam_resume_updated.pdf" 
+          href="/Shivam_Diwan_resume.pdf" 
           download="Shivam_Diwan_Resume.pdf"
           className="pointer-events-auto flex items-center gap-4 font-serif italic text-sm md:text-base tracking-[0.2em] text-accent/70 hover:text-accent transition-all duration-500 group uppercase"
           data-interactive="true"
@@ -126,7 +126,7 @@ export default function ResumePage() {
             {/* The PDF */}
             <iframe 
               ref={iframeRef}
-              src="/Shivam_resume_updated.pdf#toolbar=0&navpanes=0&scrollbar=0&view=Fit" 
+              src="/Shivam_Diwan_resume.pdf#toolbar=0&navpanes=0&scrollbar=0&view=Fit" 
               className="w-full h-full border-none relative z-10 pointer-events-none transition-opacity duration-1000 rounded-sm"
               title="Shivam Diwan Resume"
               onLoad={() => {
