@@ -1,0 +1,152 @@
+"use client";
+
+import { useRef } from "react";
+import Image from "next/image";
+import {
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+
+const TILT_SPRING = { stiffness: 150, damping: 24, mass: 0.85 };
+const LIFT_SPRING = { stiffness: 180, damping: 26, mass: 0.75 };
+
+export function Portrait3D() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
+
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const rawHover = useMotionValue(0);
+
+  const springX = useSpring(rawX, TILT_SPRING);
+  const springY = useSpring(rawY, TILT_SPRING);
+  const springHover = useSpring(rawHover, LIFT_SPRING);
+
+  // Stage 3D perspective tilt
+  const rotateY = useTransform(springX, [-1, 1], [-10, 10]);
+  const rotateX = useTransform(springY, [-1, 1], [8, -8]);
+
+  // Background mural stays crisp (no blur), shifts slightly opposite foreground for parallax
+  const bgX = useTransform(springX, [-1, 1], [8, -8]);
+  const bgY = useTransform(springY, [-1, 1], [5, -5]);
+  const bgScale = useTransform(springHover, [0, 1], [1.04, 1.08]);
+  const bgBright = useTransform(springHover, [0, 1], [1, 0.92]);
+
+  // Foreground subject floats in true 3D Z-space, tightly tucked inside the frame bounds
+  const fgX = useTransform(springX, [-1, 1], [-6, 6]);
+  const fgY = useTransform(springY, [-1, 1], [-4, 4]);
+  const fgZ = useTransform(springHover, [0, 1], [14, 38]);
+  const fgScale = useTransform(springHover, [0, 1], [0.98, 1.0]);
+
+  // Directional cast shadow falls onto the backdrop card opposite cursor movement
+  const shadowX = useTransform(springX, [-1, 1], [14, -14]);
+  const shadowY = useTransform(springY, [-1, 1], [18, 8]);
+  const shadowBlur = useTransform(springHover, [0, 1], [14, 24]);
+  const shadowAlpha = useTransform(springHover, [0, 1], [0.45, 0.65]);
+
+  const stageTransform = useMotionTemplate`rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+  const bgTransform = useMotionTemplate`translate3d(${bgX}px, ${bgY}px, 0px) scale(${bgScale})`;
+  const bgFilter = useMotionTemplate`brightness(${bgBright})`;
+  const fgTransform = useMotionTemplate`translate3d(${fgX}px, ${fgY}px, ${fgZ}px) scale(${fgScale})`;
+  const fgFilter = useMotionTemplate`drop-shadow(${shadowX}px ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, ${shadowAlpha}))`;
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (shouldReduceMotion || e.pointerType !== "mouse") return;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+    rawX.set(Math.max(-1, Math.min(1, nx)));
+    rawY.set(Math.max(-1, Math.min(1, ny)));
+    rawHover.set(1);
+  };
+
+  const handlePointerLeave = () => {
+    rawX.set(0);
+    rawY.set(0);
+    rawHover.set(0);
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className="relative aspect-[3/4] w-full select-none [perspective:950px]"
+    >
+      <motion.div
+        style={
+          shouldReduceMotion
+            ? undefined
+            : { transform: stageTransform, transformStyle: "preserve-3d" }
+        }
+        className="relative h-full w-full"
+      >
+        {/* Layer 1: Clipped backdrop card (separate from preserve-3d stage so Z-depth is never flattened) */}
+        <div
+          style={{ transform: "translateZ(0px)" }}
+          className="absolute inset-0 overflow-hidden rounded-[6px] bg-surface ring-1 ring-inset ring-white/10"
+        >
+          <motion.div
+            style={
+              shouldReduceMotion
+                ? undefined
+                : { transform: bgTransform, filter: bgFilter }
+            }
+            className="absolute inset-0 will-change-transform"
+          >
+            <Image
+              src="/about/bg.png"
+              alt="Mountain mural backdrop"
+              fill
+              priority
+              sizes="(max-width: 640px) 100vw, 320px"
+              className="object-cover object-center"
+            />
+          </motion.div>
+
+          {/* Subtle atmospheric edge vignette separates backdrop from floating subject */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_44%,rgba(0,0,0,0.46)_100%)]"
+          />
+
+          {/* Subtle bottom grounding fade on backdrop card */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/40 to-transparent"
+          />
+        </div>
+
+        {/* Layer 2: Tack-sharp foreground subject floating in true 3D Z-space above the card */}
+        <motion.div
+          style={
+            shouldReduceMotion
+              ? {
+                  filter: "drop-shadow(0 14px 18px rgba(0,0,0,0.45))",
+                }
+              : {
+                  transform: fgTransform,
+                  filter: fgFilter,
+                  transformStyle: "preserve-3d",
+                }
+          }
+          className="pointer-events-none absolute bottom-[1.5%] left-[12.5%] h-[75%] w-[75%] will-change-transform"
+        >
+          <Image
+            src="/about/me.png"
+            alt="Shivam Diwan"
+            fill
+            priority
+            sizes="(max-width: 640px) 100vw, 320px"
+            className="object-contain object-bottom"
+          />
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+}
