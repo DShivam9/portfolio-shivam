@@ -146,12 +146,15 @@ export function ContributionGraph({
   const monthRef = useRef<HTMLSpanElement>(null);
   const dayNumRef = useRef<HTMLSpanElement>(null);
   const yearNumRef = useRef<HTMLSpanElement>(null);
-  const countAnimRef = useRef<Animation | null>(null);
-  const dayAnimRef = useRef<Animation | null>(null);
-  const yearAnimRef = useRef<Animation | null>(null);
   const visibleRef = useRef(false);
   const cellIndexRef = useRef<Map<string, HTMLElement>>(new Map());
   const litCellsRef = useRef<HTMLElement[]>([]);
+  const pendingCellRef = useRef<HTMLElement | null>(null);
+  const hoverRafRef = useRef<number>(0);
+  const tipSizeRef = useRef<{ width: number; height: number }>({
+    width: 240,
+    height: 38,
+  });
 
   const { weeks, monthLabels, activeIndexByDate, totalActive } = useMemo(() => {
     const built = buildWeeks(contributions);
@@ -181,16 +184,20 @@ export function ContributionGraph({
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
+        const isInView = entries.some((entry) => entry.isIntersecting);
+        section.dataset.visible = isInView ? "true" : "false";
+        if (isInView && section.dataset.in !== "true") {
           section.dataset.in = "true";
-          observer.disconnect();
         }
       },
       { threshold: 0.15 },
     );
 
     observer.observe(section);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (hoverRafRef.current) cancelAnimationFrame(hoverRafRef.current);
+    };
   }, [contributions]);
 
   const clearRipple = () => {
@@ -217,26 +224,6 @@ export function ContributionGraph({
     litCellsRef.current = nextLit;
   };
 
-  const rollSlot = (
-    el: HTMLSpanElement | null,
-    animRef: React.MutableRefObject<Animation | null>,
-    nextText: string,
-    animate: boolean,
-  ) => {
-    if (!el) return;
-    const changed = el.textContent !== nextText;
-    el.textContent = nextText;
-    if (!animate || !changed) return;
-    animRef.current?.cancel();
-    animRef.current = el.animate(
-      [
-        { opacity: 0.25, transform: "translateY(75%)" },
-        { opacity: 1, transform: "translateY(0%)" },
-      ],
-      { duration: 165, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
-    );
-  };
-
   const showTooltipForCell = (cell: HTMLElement) => {
     const wrap = wrapRef.current;
     const tip = tooltipRef.current;
@@ -249,57 +236,60 @@ export function ContributionGraph({
     const level = Number(cell.dataset.level ?? 0) as 0 | 1 | 2 | 3 | 4;
     if (!rawCount || !month || !dayNum || !yearNum) return;
 
-    applyRipple(cell);
+    // Read layout geometry BEFORE mutating DOM to avoid forced synchronous reflow
+    const wrapRect = wrap.getBoundingClientRect();
+    const cellRect = cell.getBoundingClientRect();
+    const prevTipW = tip.offsetWidth || tipSizeRef.current.width;
+    const prevTipH = tip.offsetHeight || tipSizeRef.current.height;
+    tipSizeRef.current = { width: prevTipW, height: prevTipH };
 
-    const shouldRoll =
-      visibleRef.current &&
-      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    applyRipple(cell);
 
     const numVal = Number(rawCount);
     const countDisplay = numVal === 0 ? "No" : String(numVal);
     const countSuffix = numVal === 1 ? "contribution" : "contributions";
 
-    rollSlot(countNumRef.current, countAnimRef, countDisplay, shouldRoll);
+    if (countNumRef.current) countNumRef.current.textContent = countDisplay;
     if (countLabelRef.current) countLabelRef.current.textContent = countSuffix;
     if (monthRef.current) monthRef.current.textContent = `on ${month}`;
-    rollSlot(dayNumRef.current, dayAnimRef, dayNum, shouldRoll);
-    rollSlot(yearNumRef.current, yearAnimRef, yearNum, shouldRoll);
+    if (dayNumRef.current) dayNumRef.current.textContent = dayNum;
+    if (yearNumRef.current) yearNumRef.current.textContent = yearNum;
     if (swatchRef.current) {
       swatchRef.current.style.backgroundColor = LEVEL_COLOR[level];
     }
 
-    const wrapRect = wrap.getBoundingClientRect();
-    const cellRect = cell.getBoundingClientRect();
-    const tipWidth = tip.offsetWidth;
-    const tipHeight = tip.offsetHeight;
-
     const cellCenterX = cellRect.left - wrapRect.left + cellRect.width / 2;
-    const rawX = cellCenterX - tipWidth / 2;
-    const clampedX = Math.max(0, Math.min(wrapRect.width - tipWidth, rawX));
-    const y = cellRect.top - wrapRect.top - tipHeight - 13;
+    const rawX = cellCenterX - prevTipW / 2;
+    const clampedX = Math.max(0, Math.min(wrapRect.width - prevTipW, rawX));
+    const y = cellRect.top - wrapRect.top - prevTipH - 13;
 
     if (notchRef.current) {
       const notchX = Math.max(
         16,
-        Math.min(tipWidth - 16, cellCenterX - clampedX),
+        Math.min(prevTipW - 16, cellCenterX - clampedX),
       );
-      notchRef.current.style.left = `${notchX}px`;
+      notchRef.current.style.transform = `translate3d(${notchX}px, 0, 0) translateX(-50%) rotate(45deg)`;
     }
 
     if (!visibleRef.current) {
       tip.dataset.snap = "true";
-      tip.style.transform = `translate3d(${clampedX}px, ${y + 4}px, 0) scale(0.96)`;
-      void tip.offsetWidth;
-      tip.dataset.snap = "false";
       tip.style.transform = `translate3d(${clampedX}px, ${y}px, 0) scale(1)`;
       tip.style.opacity = "1";
       visibleRef.current = true;
+      requestAnimationFrame(() => {
+        if (tooltipRef.current) tooltipRef.current.dataset.snap = "false";
+      });
     } else {
       tip.style.transform = `translate3d(${clampedX}px, ${y}px, 0) scale(1)`;
     }
   };
 
   const hideTooltip = () => {
+    if (hoverRafRef.current) {
+      cancelAnimationFrame(hoverRafRef.current);
+      hoverRafRef.current = 0;
+    }
+    pendingCellRef.current = null;
     clearRipple();
     const tip = tooltipRef.current;
     if (!tip) return;
@@ -307,14 +297,24 @@ export function ContributionGraph({
     visibleRef.current = false;
   };
 
+  const scheduleCellHover = (cell: HTMLElement) => {
+    pendingCellRef.current = cell;
+    if (hoverRafRef.current) return;
+    hoverRafRef.current = requestAnimationFrame(() => {
+      hoverRafRef.current = 0;
+      const target = pendingCellRef.current;
+      if (target) showTooltipForCell(target);
+    });
+  };
+
   const handleGridPointerOver = (e: React.MouseEvent<HTMLDivElement>) => {
     const cell = (e.target as HTMLElement).closest<HTMLElement>("[data-date]");
-    if (cell) showTooltipForCell(cell);
+    if (cell) scheduleCellHover(cell);
   };
 
   const handleGridFocus = (e: React.FocusEvent<HTMLDivElement>) => {
     const cell = (e.target as HTMLElement).closest<HTMLElement>("[data-date]");
-    if (cell) showTooltipForCell(cell);
+    if (cell) scheduleCellHover(cell);
   };
 
   const setHighlightLevel = (level: number | null) => {
@@ -328,7 +328,7 @@ export function ContributionGraph({
   };
 
   return (
-    <div ref={sectionRef} className="gh-section px-6 py-6 sm:px-10 sm:py-7">
+    <div ref={sectionRef} className="gh-section px-6 py-10 sm:px-7 sm:py-12">
       <div ref={wrapRef} className="relative">
         {/* Gliding borderless pill with odometer number roll + cell-tracking notch */}
         <div
@@ -362,18 +362,18 @@ export function ContributionGraph({
           <span
             ref={notchRef}
             aria-hidden="true"
-            className="absolute -bottom-1 h-2.5 w-2.5 -translate-x-1/2 rotate-45 rounded-[2px] bg-surface-hover"
+            className="absolute -bottom-1 left-0 h-2.5 w-2.5 rounded-[2px] bg-surface-hover"
           />
         </div>
 
         <div className="no-scrollbar overflow-x-auto pb-1">
           <div className="mx-auto w-fit">
-            {/* Fixed integer 14px tracks + 3px gaps eliminate sub-pixel spacing jitter */}
+            {/* Fixed integer 15px tracks + 3px gaps fill the rail cleanly with zero sub-pixel jitter */}
             <div
-              className="gh-meta relative mb-2 grid h-4 gap-[3px] font-mono text-[11px] text-text-muted"
+              className="gh-meta relative mb-2.5 grid h-4 gap-[3px] font-mono text-xs text-text-muted"
               style={
                 {
-                  gridTemplateColumns: `repeat(${weekCount}, 14px)`,
+                  gridTemplateColumns: `repeat(${weekCount}, 15px)`,
                   "--meta-delay": "80ms",
                 } as MetaStyle
               }
@@ -399,7 +399,7 @@ export function ContributionGraph({
               onBlur={hideTooltip}
               className="gh-grid grid gap-[3px]"
               style={{
-                gridTemplateColumns: `repeat(${weekCount}, 14px)`,
+                gridTemplateColumns: `repeat(${weekCount}, 15px)`,
               }}
             >
               {weeks.map((week, weekIndex) => {
@@ -419,7 +419,7 @@ export function ContributionGraph({
                           <span
                             key={`empty-${weekIndex}-${dayIndex}`}
                             aria-hidden="true"
-                            className="h-[14px] w-[14px]"
+                            className="h-[15px] w-[15px]"
                           />
                         );
                       }
@@ -462,7 +462,7 @@ export function ContributionGraph({
                           data-active={isGreen ? "true" : undefined}
                           aria-label={`${countText} on ${formattedDate}`}
                           style={cellStyle}
-                          className="gh-cell block h-[14px] w-[14px] cursor-pointer rounded-[3px] focus:outline-none focus-visible:ring-1 focus-visible:ring-text/70"
+                          className="gh-cell block h-[15px] w-[15px] cursor-pointer rounded-[3px] focus:outline-none focus-visible:ring-1 focus-visible:ring-text/70"
                         />
                       );
                     })}
@@ -477,7 +477,7 @@ export function ContributionGraph({
       {/* Footer summary + interactive intensity legend */}
       <div
         style={{ "--meta-delay": "420ms" } as MetaStyle}
-        className="gh-meta mt-4 flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-text-secondary"
+        className="gh-meta mt-5 flex flex-wrap items-center justify-between gap-3 font-mono text-[13px] text-text-secondary"
       >
         <p>
           <span className="tabular-nums text-text">
@@ -496,7 +496,7 @@ export function ContributionGraph({
         </p>
 
         <div
-          className="flex items-center gap-1.5 text-[11px] text-text-muted"
+          className="flex items-center gap-1.5 text-xs text-text-muted"
           onMouseLeave={() => setHighlightLevel(null)}
         >
           <span>Less</span>
@@ -510,7 +510,7 @@ export function ContributionGraph({
                 onBlur={() => setHighlightLevel(null)}
                 aria-label={`Highlight contribution level ${level}`}
                 style={{ backgroundColor: LEVEL_COLOR[level] }}
-                className="gh-cell h-3.5 w-3.5 cursor-pointer rounded-[3px] transition-transform duration-150 hover:scale-125 focus:outline-none focus-visible:ring-1 focus-visible:ring-text/70"
+                className="gh-cell h-[15px] w-[15px] cursor-pointer rounded-[3px] transition-transform duration-150 hover:scale-125 focus:outline-none focus-visible:ring-1 focus-visible:ring-text/70"
               />
             ))}
           </div>

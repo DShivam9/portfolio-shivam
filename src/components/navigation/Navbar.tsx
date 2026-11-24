@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   motion,
   AnimatePresence,
+  useMotionValueEvent,
   useReducedMotion,
   useScroll,
   useSpring,
@@ -20,6 +22,7 @@ import { SearchIcon, type SearchIconHandle } from "@/components/icons/search-ico
 import { SunIcon, type SunIconHandle } from "@/components/icons/sun-icon";
 import { MoonIcon, type MoonIconHandle } from "@/components/icons/moon-icon";
 import { editorialNavigate } from "@/utils/editorialNavigate";
+import { InterlockingPattern } from "@/components/ui/SectionDivider";
 
 type CommandGroup = "Navigate" | "Links" | "Theme";
 
@@ -29,21 +32,23 @@ interface CommandItem {
   group: CommandGroup;
   href?: string;
   external?: boolean;
-  action?: "toggle-theme" | "copy-discord";
+  action?: "toggle-theme" | "copy-discord" | "copy-email";
 }
 
 const STATIC_COMMANDS: CommandItem[] = [
   { id: "top", label: "Go to Top", href: "#top", group: "Navigate" },
   { id: "about", label: "About", href: "#about", group: "Navigate" },
+  { id: "music", label: "Jukebox", href: "#music", group: "Navigate" },
+  { id: "activity", label: "GitHub Activity", href: "#activity", group: "Navigate" },
+  { id: "skills", label: "Stack", href: "#skills", group: "Navigate" },
   { id: "projects", label: "Projects", href: "#projects", group: "Navigate" },
-  { id: "skills", label: "Skills", href: "#skills", group: "Navigate" },
+  { id: "certifications", label: "Certifications", href: "#certifications", group: "Navigate" },
   { id: "contact", label: "Contact", href: "#contact", group: "Navigate" },
   {
     id: "resume",
     label: "Resume",
-    href: PROFILE.resumePath,
+    href: "/resume",
     group: "Links",
-    external: true,
   },
   {
     id: "github",
@@ -60,6 +65,26 @@ const STATIC_COMMANDS: CommandItem[] = [
     external: true,
   },
   {
+    id: "portfolio",
+    label: "Portfolio",
+    href: PROFILE.socials.portfolio,
+    group: "Links",
+    external: true,
+  },
+  {
+    id: "spotify",
+    label: "Spotify Playlist",
+    href: PROFILE.socials.spotifyPlaylist,
+    group: "Links",
+    external: true,
+  },
+  {
+    id: "email",
+    label: `Copy Email · ${PROFILE.email}`,
+    group: "Links",
+    action: "copy-email",
+  },
+  {
     id: "discord",
     label: `Copy Discord · @${PROFILE.socials.discord}`,
     group: "Links",
@@ -70,7 +95,26 @@ const STATIC_COMMANDS: CommandItem[] = [
 const GROUP_ORDER: CommandGroup[] = ["Navigate", "Links", "Theme"];
 const GLIDE_SPRING = { type: "spring" as const, duration: 0.22, bounce: 0 };
 const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
-const SCROLL_SPRING = { stiffness: 90, damping: 24, mass: 0.9 };
+const NAV_SCROLL_SPRING = { stiffness: 120, damping: 26, mass: 0.9 };
+
+// 16 bold square-block columns for GPU-composited stepped pixel-crawl theme transition
+const PIXEL_STEP_OFFSETS = [6, 18, 10, 26, 4, 22, 14, 28, 8, 20, 12, 24, 6, 18, 10, 22];
+
+function buildPixelCrawlPolygon(baseY: number): string {
+  const cols = PIXEL_STEP_OFFSETS.length;
+  const points: string[] = [];
+  for (let i = 0; i < cols; i++) {
+    const x0 = ((i / cols) * 100).toFixed(2);
+    const x1 = (((i + 1) / cols) * 100).toFixed(2);
+    const y = (baseY + PIXEL_STEP_OFFSETS[i]).toFixed(2);
+    points.push(`${x0}% ${y}%`, `${x1}% ${y}%`);
+  }
+  points.push("100% 100%", "0% 100%");
+  return `polygon(${points.join(", ")})`;
+}
+
+const PIXEL_CRAWL_START = buildPixelCrawlPolygon(100);
+const PIXEL_CRAWL_END = buildPixelCrawlPolygon(-28);
 
 function subscribeTheme(onStoreChange: () => void) {
   window.addEventListener("theme-change", onStoreChange);
@@ -89,19 +133,11 @@ function getThemeSnapshot(): "dark" | "light" {
 const getThemeServerSnapshot = (): "dark" | "light" => "dark";
 
 export function Navbar() {
+  const router = useRouter();
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [centerOffset, setCenterOffset] = useState(0);
-  const barRef = useRef<HTMLDivElement>(null);
-  const leftRef = useRef<HTMLAnchorElement>(null);
-  const rightRef = useRef<HTMLDivElement>(null);
-
-  const { scrollY } = useScroll();
-  const rawMorph = useTransform(scrollY, [70, 260], [0, 1]);
-  const smoothMorph = useSpring(rawMorph, SCROLL_SPRING);
-  const leftX = useTransform(smoothMorph, [0, 1], [0, centerOffset]);
-  const rightX = useTransform(smoothMorph, [0, 1], [0, -centerOffset]);
   const theme = useSyncExternalStore(
     subscribeTheme,
     getThemeSnapshot,
@@ -112,6 +148,18 @@ export function Navbar() {
   const moonRef = useRef<MoonIconHandle>(null);
   const searchRef = useRef<SearchIconHandle>(null);
   const shouldReduceMotion = useReducedMotion();
+
+  // Continuous scroll-linked spring choreography: edges retreat -> shapes sweep inward -> center SD arrives
+  const { scrollY } = useScroll();
+  const rawProgress = useTransform(scrollY, [20, 190], [0, 1]);
+  const smoothProgress = useSpring(rawProgress, NAV_SCROLL_SPRING);
+  const curtainScaleX = useTransform(smoothProgress, [0.08, 0.94], [1, 0]);
+  const edgeOpacity = useTransform(smoothProgress, [0, 0.45], [1, 0]);
+  const edgeY = useTransform(smoothProgress, [0, 0.45], [0, -5]);
+  const edgeScale = useTransform(smoothProgress, [0, 0.45], [1, 0.96]);
+  const centerOpacity = useTransform(smoothProgress, [0.52, 1], [0, 1]);
+  const centerY = useTransform(smoothProgress, [0.52, 1], [5, 0]);
+  const centerScale = useTransform(smoothProgress, [0.52, 1], [0.93, 1]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -138,17 +186,14 @@ export function Navbar() {
       apply();
     });
 
-    // Skiper26 rectangle (bottom-up) variant: crisp expo-out polygon wipe, old root frozen
+    // 100% GPU-composited stepped pixel-block crawl (bottom -> top, zero mask re-raster lag)
     transition.ready
       .then(() => {
         document.documentElement.animate(
-          [
-            { clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)" },
-            { clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)" },
-          ],
+          [{ clipPath: PIXEL_CRAWL_START }, { clipPath: PIXEL_CRAWL_END }],
           {
-            duration: 700,
-            easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+            duration: 740,
+            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
             pseudoElement: "::view-transition-new(root)",
           },
         );
@@ -192,6 +237,10 @@ export function Navbar() {
       toggleTheme();
       return;
     }
+    if (item.action === "copy-email") {
+      navigator.clipboard?.writeText(PROFILE.email).catch(() => { });
+      return;
+    }
     if (item.action === "copy-discord") {
       navigator.clipboard?.writeText(PROFILE.socials.discord).catch(() => { });
       return;
@@ -199,6 +248,8 @@ export function Navbar() {
     if (!item.href) return;
     if (item.external) {
       window.open(item.href, "_blank", "noopener,noreferrer");
+    } else if (item.href.startsWith("/")) {
+      router.push(item.href);
     } else {
       editorialNavigate(item.href, shouldReduceMotion);
     }
@@ -223,28 +274,10 @@ export function Navbar() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  // Measure inner rail width once + on resize so brand and controls glide purely on GPU translateX
-  useEffect(() => {
-    const measure = () => {
-      const bar = barRef.current;
-      const left = leftRef.current;
-      const right = rightRef.current;
-      if (!bar || !left || !right) return;
-      const style = getComputedStyle(bar);
-      const innerW =
-        bar.clientWidth -
-        parseFloat(style.paddingLeft) -
-        parseFloat(style.paddingRight);
-      const gap = 28;
-      setCenterOffset(
-        Math.max(0, (innerW - (left.offsetWidth + gap + right.offsetWidth)) / 2),
-      );
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (barRef.current) ro.observe(barRef.current);
-    return () => ro.disconnect();
-  }, []);
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const next = latest > 90;
+    setScrolled((prev) => (prev === next ? prev : next));
+  });
 
   useEffect(() => {
     if (!paletteOpen) return;
@@ -277,21 +310,38 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-bg/90 backdrop-blur-md">
-        <div
-          ref={barRef}
-          className="relative mx-auto flex h-16 max-w-5xl items-center justify-between border-x border-border px-6"
-        >
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-bg">
+        {/* Full-strength interlocking engraving so navbar takes visual priority over section dividers */}
+        <InterlockingPattern />
+
+        <div className="relative mx-auto flex h-16 max-w-5xl items-center justify-between border-x border-border px-6">
+          {/* Scroll-linked center-anchored bg curtain: smoothly shrinks inward as you scroll so shapes take over from both rails */}
+          <motion.div
+            aria-hidden="true"
+            style={
+              shouldReduceMotion
+                ? { opacity: scrolled ? 0 : 1 }
+                : { scaleX: curtainScaleX }
+            }
+            className="pointer-events-none absolute inset-0 origin-center bg-bg will-change-transform"
+          />
+
           <motion.a
-            ref={leftRef}
-            style={shouldReduceMotion ? undefined : { x: leftX }}
             href="#top"
+            tabIndex={scrolled ? -1 : 0}
+            style={
+              shouldReduceMotion
+                ? { opacity: scrolled ? 0 : 0.9 }
+                : { opacity: edgeOpacity, y: edgeY, scale: edgeScale }
+            }
             onClick={(e) => {
               e.preventDefault();
               editorialNavigate("#top", shouldReduceMotion);
             }}
             aria-label={PROFILE.name}
-            className="pressable relative z-10 inline-flex shrink-0 items-center opacity-90 transition-opacity duration-150 hover:opacity-100 will-change-transform"
+            className={`pressable relative z-10 inline-flex shrink-0 items-center will-change-transform hover:opacity-100 ${
+              scrolled ? "pointer-events-none" : ""
+            }`}
           >
             <Image
               src="/logos/brand-sd.svg"
@@ -303,10 +353,55 @@ export function Navbar() {
             />
           </motion.a>
 
+          {/* Centered SD mark when scrolled — solid bg island + soft edge feathers keep sweeping shapes clear of logo */}
           <motion.div
-            ref={rightRef}
-            style={shouldReduceMotion ? undefined : { x: rightX }}
-            className="relative z-10 flex shrink-0 items-center gap-2.5 will-change-transform"
+            style={
+              shouldReduceMotion
+                ? { opacity: scrolled ? 1 : 0 }
+                : { opacity: centerOpacity, y: centerY, scale: centerScale }
+            }
+            className="pointer-events-none absolute inset-y-0 left-1/2 z-20 flex -translate-x-1/2 items-center will-change-transform"
+          >
+            <span
+              aria-hidden="true"
+              className="h-full w-8 bg-gradient-to-r from-transparent to-bg"
+            />
+            <a
+              href="#top"
+              tabIndex={scrolled ? 0 : -1}
+              onClick={(e) => {
+                e.preventDefault();
+                editorialNavigate("#top", shouldReduceMotion);
+              }}
+              aria-label="Scroll to top"
+              className={`pressable inline-flex h-full items-center bg-bg px-5 opacity-95 transition-opacity duration-150 hover:opacity-100 ${
+                scrolled ? "pointer-events-auto" : "pointer-events-none"
+              }`}
+            >
+              <Image
+                src="/logos/brand-sd.svg"
+                alt={PROFILE.name}
+                width={44}
+                height={22}
+                priority
+                className="github-app-icon h-[22px] w-auto object-contain"
+              />
+            </a>
+            <span
+              aria-hidden="true"
+              className="h-full w-8 bg-gradient-to-l from-transparent to-bg"
+            />
+          </motion.div>
+
+          <motion.div
+            style={
+              shouldReduceMotion
+                ? { opacity: scrolled ? 0 : 1 }
+                : { opacity: edgeOpacity, y: edgeY, scale: edgeScale }
+            }
+            className={`relative z-10 inline-flex shrink-0 items-center gap-1 rounded-xl bg-surface p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.2),0_2px_6px_rgba(0,0,0,0.14)] will-change-transform ${
+              scrolled ? "pointer-events-none" : ""
+            }`}
           >
             {/* Aesthetic Light / Dark Mode Toggle */}
             <button
@@ -325,7 +420,7 @@ export function Navbar() {
                   ? "Switch to light mode"
                   : "Switch to dark mode"
               }
-              className="pressable inline-flex cursor-pointer items-center justify-center p-1 text-text/85 hover:text-text"
+              className="pressable inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-text-secondary transition-colors duration-150 hover:text-text"
             >
               <AnimatePresence mode="wait" initial={false}>
                 <motion.span
@@ -349,9 +444,9 @@ export function Navbar() {
                   className="flex items-center justify-center"
                 >
                   {theme === "dark" ? (
-                    <SunIcon ref={sunRef} size={20} />
+                    <SunIcon ref={sunRef} size={18} />
                   ) : (
-                    <MoonIcon ref={moonRef} size={20} />
+                    <MoonIcon ref={moonRef} size={18} />
                   )}
                 </motion.span>
               </AnimatePresence>
@@ -363,11 +458,11 @@ export function Navbar() {
               onMouseEnter={() => searchRef.current?.startAnimation()}
               onMouseLeave={() => searchRef.current?.stopAnimation()}
               aria-label="Open command search"
-              className="pressable inline-flex h-9 items-center gap-3 rounded-lg border border-border-strong bg-surface px-3.5 text-xs font-medium text-text hover:bg-surface-hover"
+              className="pressable inline-flex h-8 cursor-pointer items-center gap-2.5 rounded-lg bg-bg px-3 text-xs font-medium text-text shadow-[inset_0_1px_2px_rgba(0,0,0,0.16)]"
             >
               <SearchIcon ref={searchRef} size={14} className="text-text-secondary" />
               <span className="hidden sm:inline">Search</span>
-              <kbd className="rounded-[5px] border border-border bg-surface-hover px-1.5 py-0.5 font-mono text-[10px] text-text-secondary">
+              <kbd className="font-mono text-[10px] text-text-muted">
                 ⌘K
               </kbd>
             </button>
@@ -377,11 +472,27 @@ export function Navbar() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub profile"
-              className="pressable inline-flex items-center justify-center p-1 text-text/85 hover:text-text"
+              className="pressable inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary transition-colors duration-150 hover:text-text"
             >
-              <FaGithub className="h-5.5 w-5.5" />
+              <FaGithub className="h-[18px] w-[18px]" />
             </a>
           </motion.div>
+
+          {/* Rail-joint crosshairs matching SectionDivider */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-px -left-px z-10 flex h-2.5 w-2.5 -translate-x-1/2 translate-y-1/2 items-center justify-center"
+          >
+            <span className="absolute h-px w-full bg-border-strong" />
+            <span className="absolute h-full w-px bg-border-strong" />
+          </span>
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-px -right-px z-10 flex h-2.5 w-2.5 translate-x-1/2 translate-y-1/2 items-center justify-center"
+          >
+            <span className="absolute h-px w-full bg-border-strong" />
+            <span className="absolute h-full w-px bg-border-strong" />
+          </span>
         </div>
       </header>
 

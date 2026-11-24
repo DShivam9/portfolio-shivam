@@ -1,4 +1,12 @@
-let isTransitioning = false;
+import type Lenis from "lenis";
+
+let activeRaf = 0;
+let cancelListeners: (() => void) | null = null;
+let lenisInstance: Lenis | null = null;
+
+export function registerLenis(instance: Lenis | null) {
+  lenisInstance = instance;
+}
 
 function resolveTargetY(href: string): number {
   if (href === "#top") return 0;
@@ -7,12 +15,31 @@ function resolveTargetY(href: string): number {
   return Math.max(0, el.getBoundingClientRect().top + window.scrollY - 64);
 }
 
-// 3-beat editorial page cut: recede (360ms) -> calm breath (90ms) -> emerge (520ms)
+function stopActiveScroll() {
+  if (activeRaf) {
+    cancelAnimationFrame(activeRaf);
+    activeRaf = 0;
+  }
+  if (cancelListeners) {
+    cancelListeners();
+    cancelListeners = null;
+  }
+}
+
+// Graceful ease-in-out-cubic glide: soft lift-off, calm cruise, velvety landing
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+/**
+ * Interruptible, distance-scaled RAF smooth scroll to `#top` or any section.
+ * Never freezes or pauses live animations, music, shaders, or navbar choreography.
+ */
 export function editorialNavigate(
   href: string,
   reducedMotion: boolean | null,
 ) {
-  if (typeof window === "undefined" || isTransitioning) return;
+  if (typeof window === "undefined") return;
 
   // If invoked from a non-home route (e.g. 404), navigate back to home with anchor
   if (window.location.pathname !== "/") {
@@ -20,79 +47,70 @@ export function editorialNavigate(
     return;
   }
 
+  stopActiveScroll();
+
+  const startY = window.scrollY;
   const targetY = resolveTargetY(href);
-  if (Math.abs(targetY - window.scrollY) < 32) return;
+  const distance = targetY - startY;
+  if (Math.abs(distance) < 4) return;
 
   if (reducedMotion) {
     window.scrollTo({ top: targetY, behavior: "instant" });
     return;
   }
 
-  const targets = [
-    document.querySelector("main"),
-    document.querySelector("footer"),
-  ].filter((el): el is HTMLElement => el !== null);
+  // Distance-scaled duration: ~700ms for nearby sections, up to ~1350ms for full-page return to top
+  const duration = Math.min(1350, Math.max(700, 520 + Math.abs(distance) * 0.2));
 
-  if (targets.length === 0) {
-    window.scrollTo({ top: targetY, behavior: "instant" });
+  // Delegate to Lenis when smooth scroll is active so wheel & anchor jumps share identical physics
+  if (lenisInstance) {
+    lenisInstance.scrollTo(targetY, {
+      duration: duration / 1000,
+      easing: easeInOutCubic,
+    });
     return;
   }
 
-  isTransitioning = true;
-  const goingUp = targetY < window.scrollY;
-  const exitY = goingUp ? "12px" : "-12px";
-  const enterY = goingUp ? "-14px" : "14px";
+  const startTime = performance.now();
 
-  const exitAnims = targets.map((el) =>
-    el.animate(
-      [
-        { opacity: 1, transform: "translate3d(0, 0, 0)", filter: "blur(0px)" },
-        {
-          opacity: 0,
-          transform: `translate3d(0, ${exitY}, 0)`,
-          filter: "blur(4px)",
-        },
-      ],
-      {
-        duration: 360,
-        easing: "cubic-bezier(0.32, 0.72, 0, 1)",
-        fill: "forwards",
-      },
-    ),
-  );
+const INTERRUPT_KEYS = new Set([
+  "ArrowUp",
+  "ArrowDown",
+  "PageUp",
+  "PageDown",
+  "Home",
+  "End",
+  " ",
+]);
 
-  Promise.all(exitAnims.map((a) => a.finished)).then(() => {
-    window.scrollTo({ top: targetY, behavior: "instant" });
+  // Yield immediately if user scrolls, touches, or presses a navigation key mid-glide
+  const onUserInterrupt = () => stopActiveScroll();
+  const onKeyInterrupt = (event: KeyboardEvent) => {
+    if (INTERRUPT_KEYS.has(event.key)) stopActiveScroll();
+  };
+  window.addEventListener("wheel", onUserInterrupt, { passive: true });
+  window.addEventListener("touchstart", onUserInterrupt, { passive: true });
+  window.addEventListener("keydown", onKeyInterrupt, { passive: true });
+  cancelListeners = () => {
+    window.removeEventListener("wheel", onUserInterrupt);
+    window.removeEventListener("touchstart", onUserInterrupt);
+    window.removeEventListener("keydown", onKeyInterrupt);
+  };
 
-    window.setTimeout(() => {
-      const enterAnims = targets.map((el) =>
-        el.animate(
-          [
-            {
-              opacity: 0,
-              transform: `translate3d(0, ${enterY}, 0)`,
-              filter: "blur(4px)",
-            },
-            {
-              opacity: 1,
-              transform: "translate3d(0, 0, 0)",
-              filter: "blur(0px)",
-            },
-          ],
-          {
-            duration: 520,
-            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-            fill: "forwards",
-          },
-        ),
-      );
+  const step = (now: number) => {
+    const elapsed = now - startTime;
+    const progress = Math.min(1, elapsed / duration);
+    window.scrollTo({
+      top: startY + distance * easeInOutCubic(progress),
+      behavior: "instant",
+    });
 
-      Promise.all(enterAnims.map((a) => a.finished)).then(() => {
-        // Cancel fill-forwards animations so no lingering transform/filter breaks layout
-        for (const a of exitAnims) a.cancel();
-        for (const a of enterAnims) a.cancel();
-        isTransitioning = false;
-      });
-    }, 90);
-  });
+    if (progress < 1) {
+      activeRaf = requestAnimationFrame(step);
+    } else {
+      stopActiveScroll();
+    }
+  };
+
+  activeRaf = requestAnimationFrame(step);
 }

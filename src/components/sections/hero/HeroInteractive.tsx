@@ -12,6 +12,7 @@ import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, Check, Copy } from "lucide-react";
 import { PROFILE } from "@/constants/profile";
+import { EditorialText } from "@/components/ui/EditorialText";
 import { BriefcaseIcon } from "@/components/icons/briefcase-icon";
 import { CodeXmlIcon } from "@/components/icons/code-xml-icon";
 import { UserIcon } from "@/components/icons/user-icon";
@@ -52,15 +53,26 @@ export function OverviewRow({
   icon,
   href,
   external = false,
+  revealDelay,
   children,
 }: {
   icon: OverviewIconName;
   href?: string;
   external?: boolean;
+  revealDelay?: number;
   children: ReactNode;
 }) {
   const iconRef = useRef<AnimatedIconHandle>(null);
   const IconComponent = OVERVIEW_ICONS[icon];
+  const shouldReduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (revealDelay === undefined || shouldReduceMotion) return;
+    const timer = window.setTimeout(() => {
+      iconRef.current?.startAnimation();
+    }, revealDelay * 1000);
+    return () => window.clearTimeout(timer);
+  }, [revealDelay, shouldReduceMotion]);
 
   const handleEnter = () => iconRef.current?.startAnimation();
   const handleLeave = () => iconRef.current?.stopAnimation();
@@ -210,13 +222,54 @@ export function IdentityShowcase() {
       onMouseLeave={() => setPaused(false)}
       className="flex h-full min-h-[260px] flex-col items-center justify-center px-6 py-12 text-center sm:min-h-[300px] sm:px-10 md:px-12"
     >
-      <h1 className="inline-flex flex-wrap items-center justify-center gap-x-3 font-brand text-5xl font-normal leading-[1.04] tracking-normal text-text sm:gap-x-4 sm:text-6xl md:text-[4.5rem]">
-        <span>{PROFILE.name}</span>
+      <h1 className="inline-flex flex-wrap items-center justify-center gap-x-3 font-brand text-5xl font-normal leading-[1.08] tracking-normal text-text sm:gap-x-4 sm:text-6xl md:text-[4.5rem]">
+        <span className="inline-flex overflow-hidden pb-1">
+          <span className="sr-only">{PROFILE.name}</span>
+          <span aria-hidden="true" className="inline-flex">
+            {Array.from(PROFILE.name).map((char, idx) =>
+              shouldReduceMotion ? (
+                <span key={`${idx}-${char}`}>
+                  {char === " " ? "\u00A0" : char}
+                </span>
+              ) : (
+                <motion.span
+                  key={`${idx}-${char}`}
+                  initial={{ y: "110%", opacity: 0 }}
+                  animate={{ y: "0%", opacity: 1 }}
+                  transition={{
+                    duration: 0.65,
+                    delay: 0.05 + idx * 0.032,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="inline-block"
+                >
+                  {char === " " ? "\u00A0" : char}
+                </motion.span>
+              ),
+            )}
+          </span>
+        </span>
 
-        <button
+        <motion.button
           type="button"
           onClick={cycleMood}
           aria-label={`${active.alt} - cycle mood`}
+          initial={
+            shouldReduceMotion
+              ? false
+              : { opacity: 0, scale: 0.55, rotate: -14 }
+          }
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : {
+                type: "spring",
+                stiffness: 240,
+                damping: 20,
+                delay: 0.48,
+              }
+          }
           className="inline-flex h-12 w-12 shrink-0 translate-y-[3px] cursor-pointer items-center justify-center focus:outline-none sm:h-14 sm:w-14 md:h-[66px] md:w-[66px]"
         >
           <AnimatePresence mode="wait" initial={false}>
@@ -261,7 +314,7 @@ export function IdentityShowcase() {
               />
             </motion.span>
           </AnimatePresence>
-        </button>
+        </motion.button>
       </h1>
 
       <button
@@ -392,11 +445,19 @@ export function CopyToast({
   );
 }
 
-export function CopyEmailRow() {
+export function CopyEmailRow({ revealDelay }: { revealDelay?: number }) {
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<number | null>(null);
   const mailRef = useRef<AnimatedIconHandle>(null);
   const shouldReduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (revealDelay === undefined || shouldReduceMotion) return;
+    const introTimer = window.setTimeout(() => {
+      mailRef.current?.startAnimation();
+    }, revealDelay * 1000);
+    return () => window.clearTimeout(introTimer);
+  }, [revealDelay, shouldReduceMotion]);
 
   useEffect(() => {
     return () => {
@@ -521,7 +582,7 @@ export function DiscordSocialCard() {
         type="button"
         onClick={handleCopy}
         aria-label={`Copy Discord username ${PROFILE.socials.discord}`}
-        className="pressable group flex w-full cursor-pointer items-center justify-between px-6 py-6 text-left transition-colors duration-150 hover:bg-surface sm:px-7"
+        className="pressable group flex w-full cursor-pointer items-center justify-between gap-4 rounded-xl bg-surface px-5 py-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.2),0_2px_6px_rgba(0,0,0,0.14)] transition-[transform,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-[1px] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),inset_0_-1px_0_rgba(0,0,0,0.24),0_4px_10px_rgba(0,0,0,0.18)]"
       >
         <div className="flex items-center gap-4">
           <Image
@@ -529,11 +590,13 @@ export function DiscordSocialCard() {
             alt="Discord icon"
             width={44}
             height={44}
-            className="h-11 w-11 shrink-0 object-contain transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-105"
+            className="h-11 w-11 shrink-0 object-contain"
           />
           <div>
-            <p className="text-base font-medium text-text">Discord</p>
-            <p className="font-mono text-xs text-text-muted">
+            <p className="text-base font-medium text-text">
+              <EditorialText>Discord</EditorialText>
+            </p>
+            <p className="font-mono text-xs text-text-muted transition-colors duration-200 group-hover:text-text-secondary">
               {copied ? "Copied username" : `@${PROFILE.socials.discord}`}
             </p>
           </div>
@@ -554,5 +617,47 @@ export function DiscordSocialCard() {
         detail={`@${PROFILE.socials.discord}`}
       />
     </>
+  );
+}
+
+export function HeroReveal({
+  delay,
+  children,
+  className,
+  mask = true,
+}: {
+  delay: number;
+  children: ReactNode;
+  className?: string;
+  mask?: boolean;
+}) {
+  const shouldReduceMotion = useReducedMotion();
+
+  if (shouldReduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  if (mask) {
+    return (
+      <motion.div
+        initial={{ clipPath: "inset(-2px 100% -2px -8px)", opacity: 0.15 }}
+        animate={{ clipPath: "inset(-2px -8px -2px -8px)", opacity: 1 }}
+        transition={{ duration: 0.62, delay, ease: [0.22, 1, 0.36, 1] }}
+        className={className}
+      >
+        {children}
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 18, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.56, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
   );
 }

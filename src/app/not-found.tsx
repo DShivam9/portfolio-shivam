@@ -61,29 +61,29 @@ export default function NotFound() {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/"
-                className="pressable group inline-flex h-11 min-w-[172px] items-center justify-center gap-2 rounded-lg bg-text px-5 text-sm font-medium text-bg transition-opacity duration-300 hover:opacity-95"
-              >
-                <ArrowLeft
-                  className="h-4 w-4 transition-transform duration-[480ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5"
-                  strokeWidth={1.8}
-                />
-                <EditorialText hoverClassName="text-bg">
-                  Back to home
-                </EditorialText>
-              </Link>
+              <div className="inline-flex items-center gap-1 rounded-xl bg-surface p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.2),0_2px_6px_rgba(0,0,0,0.14)]">
+                <Link
+                  href="/"
+                  className="pressable group inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-bg px-4 text-sm font-medium text-text shadow-[inset_0_1px_2px_rgba(0,0,0,0.16)]"
+                >
+                  <ArrowLeft
+                    className="h-4 w-4 text-text-secondary transition-transform duration-[480ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 group-hover:text-text"
+                    strokeWidth={1.8}
+                  />
+                  <EditorialText>Back to home</EditorialText>
+                </Link>
 
-              <Link
-                href="/#projects"
-                className="pressable group inline-flex h-11 min-w-[172px] items-center justify-center gap-2 rounded-lg border border-border-strong bg-surface/85 px-5 text-sm font-medium text-text-secondary backdrop-blur-sm transition-colors duration-300 hover:bg-surface-hover hover:text-text"
-              >
-                <EditorialText>View projects</EditorialText>
-                <ArrowUpRight
-                  className="h-4 w-4 text-text-muted transition-transform duration-[480ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-text"
-                  strokeWidth={1.8}
-                />
-              </Link>
+                <Link
+                  href="/#projects"
+                  className="pressable group inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-3.5 text-sm font-medium text-text-secondary transition-colors duration-150 hover:text-text"
+                >
+                  <EditorialText>View projects</EditorialText>
+                  <ArrowUpRight
+                    className="h-4 w-4 text-text-muted transition-transform duration-[480ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-text"
+                    strokeWidth={1.8}
+                  />
+                </Link>
+              </div>
             </div>
           </div>
         </div>

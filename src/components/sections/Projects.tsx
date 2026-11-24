@@ -17,6 +17,7 @@ import {
 } from "@/constants/projects";
 import { TechLogo } from "@/components/sections/skills/TechIcons";
 import { SectionDivider } from "@/components/ui/SectionDivider";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
 const DRAWER_EASE: [number, number, number, number] = [0.32, 0.72, 0, 1];
 
@@ -550,15 +551,16 @@ export function Projects() {
         </div>
 
         <div className="divide-y divide-border">
-          {FEATURED_PROJECTS.map((project) => (
-            <ProjectRow
-              key={project.id}
-              project={project}
-              isOpen={openId === project.id}
-              onToggle={() =>
-                setOpenId((prev) => (prev === project.id ? null : project.id))
-              }
-            />
+          {FEATURED_PROJECTS.map((project, index) => (
+            <ScrollReveal key={project.id} y={18} delay={index * 0.06}>
+              <ProjectRow
+                project={project}
+                isOpen={openId === project.id}
+                onToggle={() =>
+                  setOpenId((prev) => (prev === project.id ? null : project.id))
+                }
+              />
+            </ScrollReveal>
           ))}
         </div>
 

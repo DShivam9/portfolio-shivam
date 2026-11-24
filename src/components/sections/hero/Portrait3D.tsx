@@ -30,10 +30,10 @@ export function Portrait3D() {
   const rotateY = useTransform(springX, [-1, 1], [-10, 10]);
   const rotateX = useTransform(springY, [-1, 1], [8, -8]);
 
-  // Background mural stays crisp (no blur), shifts slightly opposite foreground for parallax
-  const bgX = useTransform(springX, [-1, 1], [8, -8]);
-  const bgY = useTransform(springY, [-1, 1], [5, -5]);
-  const bgScale = useTransform(springHover, [0, 1], [1.04, 1.08]);
+  // Background mural stays crisp (no blur), shifts deeply opposite foreground for interactive mouse parallax
+  const bgX = useTransform(springX, [-1, 1], [22, -22]);
+  const bgY = useTransform(springY, [-1, 1], [16, -16]);
+  const bgScale = useTransform(springHover, [0, 1], [1.14, 1.18]);
   const bgBright = useTransform(springHover, [0, 1], [1, 0.92]);
 
   // Foreground subject floats in true 3D Z-space, tightly tucked inside the frame bounds
@@ -86,27 +86,38 @@ export function Portrait3D() {
         }
         className="relative h-full w-full"
       >
-        {/* Layer 1: Clipped backdrop card (separate from preserve-3d stage so Z-depth is never flattened) */}
+        {/* Layer 1: Clipped backdrop card — bg mural fades in calmly after foreground subject */}
         <div
           style={{ transform: "translateZ(0px)" }}
           className="absolute inset-0 overflow-hidden rounded-[6px] bg-surface ring-1 ring-inset ring-white/10"
         >
           <motion.div
-            style={
-              shouldReduceMotion
-                ? undefined
-                : { transform: bgTransform, filter: bgFilter }
-            }
-            className="absolute inset-0 will-change-transform"
+            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 0.7,
+              delay: 0.9,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="absolute inset-0"
           >
-            <Image
-              src="/about/bg.png"
-              alt="Mountain mural backdrop"
-              fill
-              priority
-              sizes="(max-width: 640px) 100vw, 320px"
-              className="object-cover object-center"
-            />
+            <motion.div
+              style={
+                shouldReduceMotion
+                  ? undefined
+                  : { transform: bgTransform, filter: bgFilter }
+              }
+              className="absolute inset-0 will-change-transform"
+            >
+              <Image
+                src="/about/bg.png"
+                alt="Mountain mural backdrop"
+                fill
+                priority
+                sizes="(max-width: 640px) 100vw, 320px"
+                className="object-cover object-center"
+              />
+            </motion.div>
           </motion.div>
 
           {/* Subtle atmospheric edge vignette separates backdrop from floating subject */}
@@ -122,7 +133,7 @@ export function Portrait3D() {
           />
         </div>
 
-        {/* Layer 2: Tack-sharp foreground subject floating in true 3D Z-space above the card */}
+        {/* Layer 2: Tack-sharp foreground subject — fades in first before the backdrop appears */}
         <motion.div
           style={
             shouldReduceMotion
@@ -137,14 +148,27 @@ export function Portrait3D() {
           }
           className="pointer-events-none absolute bottom-[1.5%] left-[12.5%] h-[75%] w-[75%] will-change-transform"
         >
-          <Image
-            src="/about/me.png"
-            alt="Shivam Diwan"
-            fill
-            priority
-            sizes="(max-width: 640px) 100vw, 320px"
-            className="object-contain object-bottom"
-          />
+          <motion.div
+            initial={
+              shouldReduceMotion ? false : { opacity: 0, scale: 0.86, y: 10 }
+            }
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{
+              duration: 0.65,
+              delay: 0.55,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="relative h-full w-full"
+          >
+            <Image
+              src="/about/me.png"
+              alt="Shivam Diwan"
+              fill
+              priority
+              sizes="(max-width: 640px) 100vw, 320px"
+              className="object-contain object-bottom"
+            />
+          </motion.div>
         </motion.div>
       </motion.div>
     </div>

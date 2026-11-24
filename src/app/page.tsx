@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Navbar } from "@/components/navigation/Navbar";
 import { Hero } from "@/components/sections/Hero";
 import { About } from "@/components/sections/About";
+import { Music } from "@/components/sections/Music";
 import {
   GitHubActivity,
   GitHubActivitySkeleton,
@@ -18,6 +19,7 @@ export default function Home() {
       <main>
         <Hero />
         <About />
+        <Music />
         <Suspense fallback={<GitHubActivitySkeleton />}>
           <GitHubActivity />
         </Suspense>

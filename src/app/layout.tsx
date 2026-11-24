@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { SmoothScroll } from "@/components/ui/SmoothScroll";
 import "./globals.css";
 
 const sohne = localFont({
@@ -70,7 +71,10 @@ export default function RootLayout({
       lang="en"
       className={`${sohne.variable} ${sohneMono.variable} ${brandPixel.variable}`}
     >
-      <body className="bg-bg text-text font-sans antialiased">{children}</body>
+      <body className="bg-bg text-text font-sans antialiased">
+        <SmoothScroll />
+        {children}
+      </body>
     </html>
   );
 }

@@ -13,10 +13,9 @@ const MAX_COLORS = 8;
 const MAX_CLICKS = 4;
 const MAX_TRAIL = 24;
 const CLICK_LIFE = 1.2;
-const TRAIL_LIFE = 0.7;
+const TRAIL_LIFE = 0.28;
 const TRAIL_STEP = 0.015;
 const INTRO_SECONDS = 2.4;
-const OUTRO_SECONDS = 0.85;
 const ATLAS_CELL_W = 60;
 const ATLAS_CELL_H = 100;
 const ATLAS_COLUMNS = 16;
@@ -83,6 +82,7 @@ interface TrailPoint {
   x: number;
   y: number;
   age: number;
+  strength: number;
 }
 
 const clamp = (value: number, min: number, max: number) =>
@@ -310,10 +310,36 @@ export function GradientASCII({
   };
 
   const settingsRef = useRef(settings);
+  const colorsKey = settings.colors.join(",");
   useEffect(() => {
     settingsRef.current = settings;
     wakeRef.current?.();
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    colorsKey,
+    settings.shape,
+    settings.characters,
+    settings.cellSize,
+    settings.density,
+    settings.glyphOpacity,
+    settings.glow,
+    settings.depthOfField,
+    settings.flicker,
+    settings.softness,
+    settings.scale,
+    settings.flow,
+    settings.speed,
+    settings.gradientOpacity,
+    settings.grain,
+    settings.variation,
+    settings.mouseInteraction,
+    settings.scrambleRadius,
+    settings.clickEffect,
+    settings.intro,
+    settings.lightMode,
+    settings.fontFamily,
+    settings.dpr,
+  ]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -382,14 +408,16 @@ export function GradientASCII({
     let paletteKey = "";
     let time = 0;
     let glyphTime = 0;
-    let introClock = !startWhenInView && (!settingsRef.current.intro || reduce) ? 1 : 0;
+    let introClock = settingsRef.current.intro && !reduce ? 0 : 1;
     let frameSeed = 0;
     let grainClock = 0;
     let raf = 0;
     let last = 0;
-    let active = !startWhenInView;
+    let started = !startWhenInView;
+    let visible = !startWhenInView;
     let disposed = false;
     let ready = !parallel;
+    const cursor = { x: 0, y: 0, active: 0 };
 
     const linked = () =>
       !parallel ||
@@ -420,9 +448,9 @@ export function GradientASCII({
           if (disposed || atlasKey !== key) return;
           if (atlas) gl.deleteTexture(atlas.texture);
           atlas = buildAtlas(gl, s.characters, s.fontFamily);
-          if (active || introClock > 0) draw();
+          if (started && visible) draw();
         },
-        () => {},
+        () => { },
       );
     };
 
@@ -472,14 +500,7 @@ export function GradientASCII({
     };
 
     const draw = () => {
-      if (!ready) return;
-      if (!active && introClock <= 0) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        return;
-      }
+      if (!ready || !started) return;
       const s = settingsRef.current;
       const aspect = view.width / view.height;
       syncAtlas();
@@ -502,9 +523,11 @@ export function GradientASCII({
       gl.uniform1f(fu.uFlow, s.flow);
       gl.uniform2f(fu.uSeed, s.variation * 3.17, s.variation * 1.91);
       gl.uniform4fv(fu.uTrail, trailData);
+      gl.uniform1i(fu.uTrailCount, trail.length);
       gl.uniform1f(fu.uRadius, s.scrambleRadius);
       gl.uniform4fv(fu.uClicks, clickData);
       gl.uniform1i(fu.uClickEffect, s.clickEffect);
+      gl.uniform3f(fu.uCursor, cursor.x, cursor.y, cursor.active);
       gl.uniform1f(fu.uIntro, introClock);
       gl.uniform1f(fu.uFrame, frameSeed);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -547,13 +570,22 @@ export function GradientASCII({
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
+    let rectCache = container.getBoundingClientRect();
+    let resizeRaf = 0;
+
+    const refreshRect = () => {
+      rectCache = container.getBoundingClientRect();
+    };
+
     const resize = () => {
       const s = settingsRef.current;
       view.width = Math.max(1, container.clientWidth);
       view.height = Math.max(1, container.clientHeight);
-      view.ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);
+      // Cap DPR at 1.5 — visually identical on 18px ASCII cells, ~44% less fragment fill cost
+      view.ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 1.5);
       canvas.width = Math.max(1, Math.round(view.width * view.ratio));
       canvas.height = Math.max(1, Math.round(view.height * view.ratio));
+      refreshRect();
       sizeTarget(
         gl,
         fieldTarget,
@@ -564,13 +596,23 @@ export function GradientASCII({
       const haloHeight = Math.max(1, Math.round(canvas.height / 4));
       sizeTarget(gl, haloA, haloWidth, haloHeight);
       sizeTarget(gl, haloB, haloWidth, haloHeight);
-      if (active || introClock > 0) {
+      if (started && visible) {
         draw();
         wake();
       }
     };
 
     const updateInput = (dt: number) => {
+      const s = settingsRef.current;
+      const engaged = pointer.inside && s.mouseInteraction && !reduce;
+      const follow = 1 - Math.exp(-dt * (engaged ? 4.2 : 2.2));
+      const targetX = engaged ? pointer.x : 0;
+      const targetY = engaged ? pointer.y : 0;
+      const targetActive = engaged ? 1 : 0;
+      cursor.x += (targetX - cursor.x) * follow;
+      cursor.y += (targetY - cursor.y) * follow;
+      cursor.active += (targetActive - cursor.active) * follow;
+
       trail.forEach((point) => {
         point.age += dt;
       });
@@ -584,7 +626,7 @@ export function GradientASCII({
           continue;
         }
         const k = 1 - point.age / TRAIL_LIFE;
-        trailData.set([point.x, point.y, k * k, 0], i * 4);
+        trailData.set([point.x, point.y, k * k * point.strength, 0], i * 4);
       }
       clicks.forEach((click) => {
         click.age += dt;
@@ -606,7 +648,7 @@ export function GradientASCII({
 
     const frame = (now: number) => {
       raf = 0;
-      if (disposed || document.hidden || (!active && introClock <= 0)) return;
+      if (disposed || !started || !visible || document.hidden) return;
       if (!ready) {
         if (!gl.isContextLost() && !linked()) {
           raf = requestAnimationFrame(frame);
@@ -625,17 +667,8 @@ export function GradientASCII({
         time += dt * s.speed * 0.5;
         glyphTime += dt * Math.max(s.speed, 0.15);
       }
-      if (active) {
-        if (introClock < 1) {
-          introClock =
-            s.intro && !reduce
-              ? Math.min(1, introClock + dt / INTRO_SECONDS)
-              : 1;
-        }
-      } else if (introClock > 0) {
-        introClock = reduce
-          ? 0
-          : Math.max(0, introClock - dt / OUTRO_SECONDS);
+      if (introClock < 1) {
+        introClock = Math.min(1, introClock + dt / INTRO_SECONDS);
       }
       grainClock += dt;
       if (!reduce && grainClock > 1 / 24) {
@@ -644,21 +677,20 @@ export function GradientASCII({
       }
       updateInput(dt);
       draw();
-      const busy = active
-        ? !reduce || introClock < 1 || clicks.length > 0 || trail.length > 0
-        : introClock > 0;
+      const busy =
+        !reduce || introClock < 1 || clicks.length > 0 || trail.length > 0;
       if (busy) raf = requestAnimationFrame(frame);
       else last = 0;
     };
 
     function wake() {
-      if (!raf && !disposed && !document.hidden && (active || introClock > 0)) {
+      if (!raf && !disposed && started && visible && !document.hidden) {
         raf = requestAnimationFrame(frame);
       }
     }
 
     const locate = (event: PointerEvent) => {
-      const rect = container.getBoundingClientRect();
+      const rect = rectCache;
       const x = (event.clientX - rect.left) / Math.max(1, rect.width);
       const y = 1 - (event.clientY - rect.top) / Math.max(1, rect.height);
       const aspect = rect.width / Math.max(1, rect.height);
@@ -668,7 +700,7 @@ export function GradientASCII({
     };
 
     const onPointerMove = (event: PointerEvent) => {
-      if (!active) return;
+      if (!started || !visible) return;
       locate(event);
       const s = settingsRef.current;
       if (!pointer.inside || !s.mouseInteraction || reduce) return;
@@ -677,6 +709,9 @@ export function GradientASCII({
         ? Math.hypot(pointer.x - head.x, pointer.y - head.y)
         : Infinity;
       if (gap < TRAIL_STEP) return;
+      // Scale trail strength by pointer speed so slow glides stay lush without strobing
+      const speed = head ? gap / Math.max(0.016, head.age) : 0.6;
+      const strength = clamp((speed - 0.05) / 0.7, 0.45, 1);
       if (head && head.age < 0.1) {
         const steps = Math.min(6, Math.floor(gap / (TRAIL_STEP * 2)));
         for (let i = 1; i <= steps; i++) {
@@ -685,20 +720,21 @@ export function GradientASCII({
             x: head.x + (pointer.x - head.x) * k,
             y: head.y + (pointer.y - head.y) * k,
             age: 0,
+            strength,
           });
         }
       }
-      trail.unshift({ x: pointer.x, y: pointer.y, age: 0 });
+      trail.unshift({ x: pointer.x, y: pointer.y, age: 0, strength });
       trail.length = Math.min(trail.length, MAX_TRAIL);
       wake();
     };
 
     const onPointerDown = (event: PointerEvent) => {
-      if (!active) return;
+      if (!started || !visible) return;
       locate(event);
       const s = settingsRef.current;
       if (!pointer.inside || !s.clickEffect || reduce) return;
-      clicks.unshift({ x: pointer.x, y: pointer.y, age: 0 });
+      clicks.unshift({ x: pointer.x, y: pointer.y, age: 0, strength: 1 });
       if (clicks.length > MAX_CLICKS) clicks.pop();
       wake();
     };
@@ -708,15 +744,31 @@ export function GradientASCII({
       wake();
     };
 
-    const resizeObserver = new ResizeObserver(resize);
+    const onResizeObserved = () => {
+      if (resizeRaf) return;
+      resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = 0;
+        resize();
+      });
+    };
+
+    const onContextLost = (event: Event) => {
+      event.preventDefault();
+      cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    const resizeObserver = new ResizeObserver(onResizeObserved);
     resizeObserver.observe(container);
 
     const intersection = new IntersectionObserver(
       (entries) => {
         const isInView = entries.some((entry) => entry.isIntersecting);
-        if (isInView !== active) {
-          active = isInView;
+        visible = isInView;
+        if (isInView) {
+          started = true;
           last = 0;
+          refreshRect();
           wake();
         }
       },
@@ -726,6 +778,8 @@ export function GradientASCII({
 
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     window.addEventListener("pointerdown", onPointerDown, { passive: true });
+    window.addEventListener("scroll", refreshRect, { passive: true });
+    canvas.addEventListener("webglcontextlost", onContextLost);
     document.addEventListener("visibilitychange", onVisibility);
     resize();
     wakeRef.current = wake;
@@ -734,11 +788,14 @@ export function GradientASCII({
       if (disposed) return;
       disposed = true;
       cancelAnimationFrame(raf);
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
       wakeRef.current = null;
       resizeObserver.disconnect();
       intersection.disconnect();
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("scroll", refreshRect);
+      canvas.removeEventListener("webglcontextlost", onContextLost);
       document.removeEventListener("visibilitychange", onVisibility);
       [fieldTarget, haloA, haloB].forEach((target) => {
         target.textures.forEach((texture) => gl.deleteTexture(texture));

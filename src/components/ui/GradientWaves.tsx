@@ -388,7 +388,8 @@ export function GradientWaves({
 
     const fit = () => {
       const s = settingsRef.current;
-      const ratio = Math.min(window.devicePixelRatio || 1, s.dpr);
+      // Cap DPR at 1.25 for 3D raymarching waves — ~60% fewer pixels with identical smooth sky
+      const ratio = Math.min(window.devicePixelRatio || 1, Math.min(s.dpr, 1.25));
       const width = Math.max(1, Math.round(state.cssWidth * ratio));
       const height = Math.max(1, Math.round(state.cssHeight * ratio));
       if (width === state.width && height === state.height) return;
@@ -536,15 +537,22 @@ export function GradientWaves({
     };
     wakeRef.current = wake;
 
+    let rectCache = container.getBoundingClientRect();
+
+    const refreshRect = () => {
+      rectCache = container.getBoundingClientRect();
+    };
+
     const measure = () => {
       state.cssWidth = container.clientWidth;
       state.cssHeight = container.clientHeight;
+      refreshRect();
       state.quiet = 0;
       wake();
     };
 
     const local = (event: PointerEvent) => {
-      const rect = container.getBoundingClientRect();
+      const rect = rectCache;
       return {
         x: (event.clientX - rect.left) / Math.max(rect.width, 1),
         y: (event.clientY - rect.top) / Math.max(rect.height, 1),
@@ -595,8 +603,15 @@ export function GradientWaves({
       wake();
     };
 
+    const onContextLost = (event: Event) => {
+      event.preventDefault();
+      cancelAnimationFrame(state.raf);
+      state.raf = 0;
+    };
+
     const visibility = new IntersectionObserver((entries) => {
       state.visible = entries.some((entry) => entry.isIntersecting);
+      if (state.visible) refreshRect();
       wake();
     });
     visibility.observe(container);
@@ -606,6 +621,8 @@ export function GradientWaves({
     document.addEventListener("visibilitychange", wake);
     window.addEventListener("pointermove", onMove, { passive: true });
     window.addEventListener("pointerdown", onDown);
+    window.addEventListener("scroll", refreshRect, { passive: true });
+    canvas.addEventListener("webglcontextlost", onContextLost);
     document.documentElement.addEventListener("pointerleave", onLeave);
     state.raf = requestAnimationFrame(tick);
 
@@ -617,6 +634,8 @@ export function GradientWaves({
       sizes.disconnect();
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("scroll", refreshRect);
+      canvas.removeEventListener("webglcontextlost", onContextLost);
       document.documentElement.removeEventListener("pointerleave", onLeave);
       gl.deleteProgram(program);
       gl.deleteBuffer(buffer);

@@ -18,6 +18,7 @@ import {
 } from "@/constants/techStack";
 import { TechLogo } from "@/components/sections/skills/TechIcons";
 import { SectionDivider } from "@/components/ui/SectionDivider";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
 const TAB_SPRING = { type: "spring" as const, duration: 0.24, bounce: 0 };
 const TECH_BY_ID = new Map<string, TechItem>(
@@ -129,22 +130,29 @@ const TechGrid = memo(function TechGrid({
             )}
 
             <span
-              className={`tech-tile-body relative z-10 flex flex-col items-center gap-2.5 ${isDimmed ? "opacity-15" : "opacity-100"
+              className={`tech-tile-body relative z-10 flex h-full w-full flex-col items-center justify-center ${isDimmed ? "opacity-15" : "opacity-100"
                 }`}
             >
               <span className="tech-tile-icon flex h-8 w-8 items-center justify-center">
                 <TechLogo id={item.id} name={item.name} />
               </span>
 
-              <span
-                className={`font-mono text-[11px] leading-none transition-colors duration-150 ${isPinned || isAuto
-                    ? "text-text"
-                    : isConnected || isMatchedFilter
-                      ? "text-text-secondary group-hover:text-text"
-                      : "text-text-muted group-hover:text-text"
-                  }`}
-              >
-                {item.name}
+              {/* Letter-by-letter vertical slot-reveal on hover/pin/auto — matches EditorialText */}
+              <span className="pointer-events-none absolute inset-x-1.5 bottom-3 flex justify-center overflow-hidden font-mono text-[11px] leading-[1.3] text-text">
+                <span className="sr-only">{item.name}</span>
+                <span aria-hidden="true" className="inline-flex">
+                  {Array.from(item.name).map((char, idx) => (
+                    <span
+                      key={`${idx}-${char}`}
+                      style={{
+                        transitionDelay: `${idx * (item.name.length > 10 ? 14 : 22)}ms`,
+                      }}
+                      className="inline-block translate-y-[125%] opacity-0 transition-[transform,opacity] duration-[480ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0 group-hover:opacity-100 group-data-[auto=true]:translate-y-0 group-data-[auto=true]:opacity-100 group-data-[pinned=true]:translate-y-0 group-data-[pinned=true]:opacity-100 motion-reduce:transition-none"
+                    >
+                      {char === " " ? "\u00A0" : char}
+                    </span>
+                  ))}
+                </span>
               </span>
             </span>
           </button>
@@ -257,18 +265,16 @@ export function TechStack() {
   return (
     <section ref={sectionRef} id="skills" className="w-full scroll-mt-16">
       <div className="mx-auto max-w-5xl border-x border-border">
-        {/* Header + rail-integrated hairline category tabs */}
-        <div className="flex flex-wrap items-stretch justify-between border-b border-border">
-          <div className="flex items-center px-6 py-2.5 sm:px-10">
-            <h2 className="font-brand text-3xl font-normal leading-none tracking-normal text-text">
-              Tech Stack
-            </h2>
-          </div>
+        {/* Header + tactile segmented category pills matching navbar Search ⌘K */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-2.5 sm:px-10">
+          <h2 className="font-brand text-3xl font-normal leading-none tracking-normal text-text">
+            Stack
+          </h2>
 
           <div
             role="tablist"
             aria-label="Filter tech stack by category"
-            className="flex flex-wrap items-stretch divide-x divide-border border-t border-border sm:border-l sm:border-t-0"
+            className="inline-flex flex-wrap items-center gap-0.5 rounded-xl bg-surface p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.2),0_2px_6px_rgba(0,0,0,0.14)]"
           >
             {TECH_CATEGORIES.map((tab) => {
               const isSelected = category === tab.id;
@@ -284,35 +290,38 @@ export function TechStack() {
                     setPinnedId(null);
                     setAutoId(null);
                   }}
-                  className={`pressable relative flex cursor-pointer items-center px-3.5 py-2.5 font-mono text-xs transition-colors duration-150 ${isSelected
-                      ? "bg-surface text-text"
-                      : "text-text-muted hover:bg-surface/50 hover:text-text-secondary"
-                    }`}
+                  className={`pressable relative flex cursor-pointer items-center rounded-lg px-3 py-1.5 font-sans text-xs font-medium transition-colors duration-150 ${
+                    isSelected
+                      ? "text-text"
+                      : "text-text-muted hover:text-text-secondary"
+                  }`}
                 >
-                  <span>{tab.label}</span>
                   {isSelected && (
                     <motion.span
                       layoutId="stack-filter-pill"
                       transition={
                         shouldReduceMotion ? { duration: 0.12 } : TAB_SPRING
                       }
-                      className="pointer-events-none absolute inset-x-0 bottom-0 h-[1.5px] bg-text"
+                      className="pointer-events-none absolute inset-0 rounded-lg bg-bg shadow-[inset_0_1px_2px_rgba(0,0,0,0.14)]"
                     />
                   )}
+                  <span className="relative z-10">{tab.label}</span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        <TechGrid
-          category={category}
-          pinnedId={pinnedId}
-          autoId={activeAutoId}
-          connectedSet={connectedSet}
-          onInspect={handleInspect}
-          onTogglePin={handleTogglePin}
-        />
+        <ScrollReveal y={20}>
+          <TechGrid
+            category={category}
+            pinnedId={pinnedId}
+            autoId={activeAutoId}
+            connectedSet={connectedSet}
+            onInspect={handleInspect}
+            onTogglePin={handleTogglePin}
+          />
+        </ScrollReveal>
 
         {/* Fixed-height Inspector Bar (instant zero-overhead swap for aggressive scrubbing) */}
         <div className="flex min-h-[60px] items-center justify-between gap-4 px-6 py-3 sm:px-10">

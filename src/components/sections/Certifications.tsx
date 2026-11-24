@@ -1,6 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import { FaAws } from "react-icons/fa6";
 import { SectionDivider } from "@/components/ui/SectionDivider";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
 interface Certification {
   title: string;
@@ -28,7 +29,8 @@ export function Certifications() {
           </h2>
         </div>
 
-        <div className="divide-y divide-border">
+        <ScrollReveal y={18}>
+          <div className="divide-y divide-border">
           {CERTIFICATIONS.map((cert) => (
             <a
               key={cert.title}
@@ -64,7 +66,8 @@ export function Certifications() {
               </span>
             </a>
           ))}
-        </div>
+          </div>
+        </ScrollReveal>
       </div>
 
       <SectionDivider />

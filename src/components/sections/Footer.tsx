@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
+import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowUp, ArrowUpRight, Check, Copy } from "lucide-react";
 import { PROFILE } from "@/constants/profile";
@@ -11,9 +13,13 @@ import {
   type FileTextIconHandle,
 } from "@/components/icons/file-text-icon";
 import { EditorialText } from "@/components/ui/EditorialText";
-import { GradientASCII } from "@/components/ui/GradientASCII";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { CopyToast } from "@/components/sections/hero/HeroInteractive";
 import { editorialNavigate } from "@/utils/editorialNavigate";
+
+const GradientASCII = dynamic(() => import("@/components/ui/GradientASCII"), {
+  ssr: false,
+});
 
 const ICON_EASE: [number, number, number, number] = [0.23, 1, 0.32, 1];
 const ASCII_COLORS = ["#1e3fd8", "#f6f8ff", "#a5d8ff", "#38bdf8"];
@@ -29,26 +35,45 @@ function getIsLightTheme() {
 
 const INDEX_LINKS = [
   { label: "About", href: "#about" },
-  { label: "Skills", href: "#skills" },
+  { label: "Jukebox", href: "#music" },
+  { label: "Activity", href: "#activity" },
+  { label: "Stack", href: "#skills" },
   { label: "Projects", href: "#projects" },
   { label: "Certifications", href: "#certifications" },
 ] as const;
 
-function formatIST() {
-  return new Intl.DateTimeFormat("en-IN", {
-    timeZone: "Asia/Kolkata",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  }).format(new Date());
+const IST_FORMATTER = new Intl.DateTimeFormat("en-IN", {
+  timeZone: "Asia/Kolkata",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: true,
+});
+
+function FooterClock() {
+  const [time, setTime] = useState("");
+
+  useEffect(() => {
+    const update = () => {
+      if (!document.hidden) setTime(IST_FORMATTER.format(new Date()));
+    };
+    update();
+    const id = window.setInterval(update, 1_000);
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, []);
+
+  if (!time) return null;
+  return <span className="tabular-nums">{time} IST</span>;
 }
 
 export function Footer() {
   const [copiedField, setCopiedField] = useState<"email" | "discord" | null>(
     null,
   );
-  const [time, setTime] = useState("");
   const isLightTheme = useSyncExternalStore(
     subscribeTheme,
     getIsLightTheme,
@@ -60,11 +85,7 @@ export function Footer() {
   const copyTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const update = () => setTime(formatIST());
-    update();
-    const id = window.setInterval(update, 1_000);
     return () => {
-      window.clearInterval(id);
       if (copyTimerRef.current) window.clearTimeout(copyTimerRef.current);
     };
   }, []);
@@ -87,13 +108,15 @@ export function Footer() {
       id="contact"
       className="relative w-full scroll-mt-16 overflow-hidden"
     >
-      {/* Full-bleed viewport GradientASCII backdrop — appears at footer bottom, dissolves when scrolling up */}
+      {/* Full-bleed viewport GradientASCII backdrop — plays intro once on reach, pauses cleanly off-screen */}
       <GradientASCII
         colors={ASCII_COLORS}
         shape="horizon"
         lightMode={isLightTheme}
+        scrambleRadius={0.2}
+        clickEffect="wave"
         startWhenInView
-        viewThreshold={0.75}
+        viewThreshold={0.15}
         className="!absolute inset-0"
       />
       <div
@@ -109,6 +132,7 @@ export function Footer() {
         </div>
 
         {/* Editorial top stage: generous vertical breathing room so footer fills full viewport below navbar */}
+        <ScrollReveal y={22} className="flex flex-1 flex-col">
         <div className="grid flex-1 grid-cols-1 content-center gap-12 px-6 py-20 sm:px-10 sm:py-24 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-7">
             <h3 className="text-3xl font-medium tracking-tight text-text [text-wrap:balance] sm:text-5xl sm:leading-[1.08]">
@@ -120,21 +144,19 @@ export function Footer() {
               builds. Fastest way to reach me is email.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              {/* Split hairline email capsule: primary mailto + attached copy trigger */}
-              <div className="inline-flex h-11 items-stretch overflow-hidden rounded-lg border border-border-strong bg-surface">
+            <div className="mt-8 flex flex-wrap items-center gap-3.5">
+              {/* Tactile email + copy dock matching navbar Search ⌘K */}
+              <div className="inline-flex items-center gap-1 rounded-xl bg-surface p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.2),0_2px_6px_rgba(0,0,0,0.14)]">
                 <a
                   href={`mailto:${PROFILE.email}`}
                   onMouseEnter={() => mailRef.current?.startAnimation()}
                   onMouseLeave={() => mailRef.current?.stopAnimation()}
-                  className="group inline-flex items-center gap-2.5 bg-text px-4 text-sm font-medium text-bg transition-opacity duration-300 hover:opacity-95 focus-visible:outline-none"
+                  className="pressable group inline-flex h-9 items-center gap-2.5 rounded-lg bg-bg px-4 text-sm font-medium text-text shadow-[inset_0_1px_2px_rgba(0,0,0,0.16)] focus-visible:outline-none"
                 >
-                  <MailIcon ref={mailRef} size={16} />
-                  <EditorialText hoverClassName="text-bg">
-                    {PROFILE.email}
-                  </EditorialText>
+                  <MailIcon ref={mailRef} size={16} className="text-text-secondary" />
+                  <EditorialText>{PROFILE.email}</EditorialText>
                   <ArrowUpRight
-                    className="h-3.5 w-3.5 opacity-65 transition-transform duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100"
+                    className="h-3.5 w-3.5 text-text-muted transition-transform duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-text"
                     strokeWidth={1.8}
                   />
                 </a>
@@ -143,7 +165,7 @@ export function Footer() {
                   type="button"
                   onClick={() => copyValue("email", PROFILE.email)}
                   aria-label="Copy email address"
-                  className="inline-flex cursor-pointer items-center gap-1.5 border-l border-border-strong px-3.5 font-mono text-xs text-text-secondary transition-colors duration-150 hover:bg-surface-hover hover:text-text active:bg-surface"
+                  className="pressable inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3 font-mono text-xs text-text-secondary transition-colors duration-150 hover:text-text"
                 >
                   <AnimatePresence mode="wait" initial={false}>
                     {copiedField === "email" ? (
@@ -199,28 +221,28 @@ export function Footer() {
                 </button>
               </div>
 
-              <a
-                href={PROFILE.resumePath}
-                target="_blank"
-                rel="noopener noreferrer"
-                onMouseEnter={() => resumeRef.current?.startAnimation()}
-                onMouseLeave={() => resumeRef.current?.stopAnimation()}
-                className="pressable group inline-flex h-11 items-center gap-2 rounded-lg border border-border-strong bg-surface/90 px-4 font-mono text-xs font-medium text-text transition-colors duration-300 hover:bg-surface-hover"
-              >
-                <FileTextIcon ref={resumeRef} size={15} />
-                <EditorialText>Resume</EditorialText>
-                <ArrowUpRight
-                  className="h-3.5 w-3.5 text-text/75 transition-transform duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-text"
-                  strokeWidth={1.7}
-                />
-              </a>
+              <div className="inline-flex items-center rounded-xl bg-surface p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.2),0_2px_6px_rgba(0,0,0,0.14)]">
+                <Link
+                  href="/resume"
+                  onMouseEnter={() => resumeRef.current?.startAnimation()}
+                  onMouseLeave={() => resumeRef.current?.stopAnimation()}
+                  className="pressable group inline-flex h-9 items-center gap-2 rounded-lg bg-bg px-4 font-mono text-xs font-medium text-text shadow-[inset_0_1px_2px_rgba(0,0,0,0.16)]"
+                >
+                  <FileTextIcon ref={resumeRef} size={15} className="text-text-secondary" />
+                  <EditorialText>Resume</EditorialText>
+                  <ArrowUpRight
+                    className="h-3.5 w-3.5 text-text-muted transition-transform duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-text"
+                    strokeWidth={1.7}
+                  />
+                </Link>
+              </div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:gap-12 lg:col-span-5 lg:justify-self-end">
             <div>
               <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-text/90">
-                Index
+                Jump to
               </p>
               <ul className="mt-4 space-y-2.5 text-sm font-medium">
                 {INDEX_LINKS.map((link) => (
@@ -297,6 +319,7 @@ export function Footer() {
             </div>
           </div>
         </div>
+        </ScrollReveal>
 
         {/* Monumental architectural wordmark sitting flush on the colophon hairline */}
         <div
@@ -324,7 +347,7 @@ export function Footer() {
           </div>
 
           <div className="flex items-center gap-5 font-mono text-xs text-text/90">
-            {time && <span className="tabular-nums">{time} IST</span>}
+            <FooterClock />
             <a
               href="#top"
               onClick={(e) => {
