@@ -21,7 +21,7 @@ export default function ResumePage() {
       <main>
         {/* Header Bar */}
         <section className="w-full">
-          <div className="mx-auto max-w-5xl border-x border-border">
+          <div className="section-shell">
             <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 sm:px-10">
               <div className="flex items-center gap-4">
                 <Link
@@ -35,7 +35,7 @@ export default function ResumePage() {
                   <span>Back</span>
                 </Link>
 
-                <h1 className="font-brand text-3xl font-normal leading-none tracking-normal text-text">
+                <h1 className="section-title">
                   Resume
                 </h1>
               </div>
@@ -50,7 +50,7 @@ export default function ResumePage() {
 
         {/* Clean Framed US-Letter Document Stage */}
         <section className="w-full">
-          <div className="mx-auto max-w-5xl border-x border-border px-4 py-10 sm:px-10 sm:py-14">
+          <div className="section-shell px-4 py-10 sm:px-10 sm:py-14">
             {/* Desktop / Tablet inline PDF sheet — exact 8.5x11 ratio + negative inset clips Chrome's grey PDF gutter cleanly */}
             <div className="mx-auto hidden max-w-[820px] overflow-hidden rounded-2xl bg-white ring-1 ring-border [box-shadow:var(--music-card-shadow)] sm:block">
               <div className="relative aspect-[8.5/11] w-full overflow-hidden bg-white">

@@ -13,7 +13,7 @@ import {
   type FileTextIconHandle,
 } from "@/components/icons/file-text-icon";
 import { EditorialText } from "@/components/ui/EditorialText";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { ScrollHeading, ScrollReveal } from "@/components/ui/ScrollReveal";
 import { CopyToast } from "@/components/sections/hero/HeroInteractive";
 import { editorialNavigate } from "@/utils/editorialNavigate";
 
@@ -22,6 +22,7 @@ const GradientASCII = dynamic(() => import("@/components/ui/GradientASCII"), {
 });
 
 const ICON_EASE: [number, number, number, number] = [0.23, 1, 0.32, 1];
+const WORDMARK_CHARS = Array.from("Shivam Diwan");
 const ASCII_COLORS = ["#1e3fd8", "#f6f8ff", "#a5d8ff", "#38bdf8"];
 
 function subscribeTheme(cb: () => void) {
@@ -74,6 +75,7 @@ export function Footer() {
   const [copiedField, setCopiedField] = useState<"email" | "discord" | null>(
     null,
   );
+  const [gradientActive, setGradientActive] = useState(false);
   const isLightTheme = useSyncExternalStore(
     subscribeTheme,
     getIsLightTheme,
@@ -108,45 +110,58 @@ export function Footer() {
       id="contact"
       className="relative w-full scroll-mt-16 overflow-hidden"
     >
-      {/* Full-bleed viewport GradientASCII backdrop — plays intro once on reach, pauses cleanly off-screen */}
-      <GradientASCII
-        colors={ASCII_COLORS}
-        shape="horizon"
-        lightMode={isLightTheme}
-        scrambleRadius={0.2}
-        clickEffect="wave"
-        startWhenInView
-        viewThreshold={0.15}
-        className="!absolute inset-0"
-      />
+      {/* Full-bleed viewport GradientASCII backdrop — ignites the moment Shivam Diwan lands */}
+      <motion.div
+        aria-hidden="true"
+        initial={false}
+        animate={{ opacity: shouldReduceMotion || gradientActive ? 1 : 0 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="pointer-events-none absolute inset-0"
+      >
+        <GradientASCII
+          colors={ASCII_COLORS}
+          shape="horizon"
+          lightMode={isLightTheme}
+          scrambleRadius={0.2}
+          clickEffect="wave"
+          startWhenInView
+          viewThreshold={0.15}
+          active={Boolean(shouldReduceMotion) || gradientActive}
+          className="!absolute inset-0 pointer-events-auto"
+        />
+      </motion.div>
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-bg to-transparent"
       />
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-4rem)] max-w-5xl flex-col border-x border-border">
+      <div className="section-shell relative z-10 flex min-h-[calc(100svh-4rem)] flex-col">
         <div className="border-b border-border px-6 py-3 sm:px-10">
-          <h2 className="font-brand text-3xl font-normal leading-none tracking-normal text-text">
-            Contact
-          </h2>
+          <ScrollHeading delay={0.1}>
+            <h2 className="section-title">Contact</h2>
+          </ScrollHeading>
         </div>
 
-        {/* Editorial top stage: generous vertical breathing room so footer fills full viewport below navbar */}
-        <ScrollReveal y={22} className="flex flex-1 flex-col">
+        {/* Editorial top stage: staggered behind GradientASCII horizon reveal (zero block wrapper collision) */}
         <div className="grid flex-1 grid-cols-1 content-center gap-12 px-6 py-20 sm:px-10 sm:py-24 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-7">
-            <h3 className="text-3xl font-medium tracking-tight text-text [text-wrap:balance] sm:text-5xl sm:leading-[1.08]">
-              Let&apos;s build something worth shipping.
-            </h3>
+            <ScrollReveal y={16} delay={0.28}>
+              <h3 className="text-3xl font-medium tracking-tight text-text [text-wrap:balance] sm:text-5xl sm:leading-[1.08]">
+                Let&apos;s build something worth shipping.
+              </h3>
+            </ScrollReveal>
 
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-text/95 [text-wrap:pretty] sm:text-[15px]">
-              Open to full-stack engineering roles, internships, and interesting
-              builds. Fastest way to reach me is email.
-            </p>
+            <ScrollReveal y={12} delay={0.42}>
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-text/95 [text-wrap:pretty] sm:text-[15px]">
+                Open to full-stack engineering roles, internships, and interesting
+                builds. Fastest way to reach me is email.
+              </p>
+            </ScrollReveal>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3.5">
+            <ScrollReveal y={12} delay={0.54}>
+              <div className="mt-8 flex flex-wrap items-center gap-3.5">
               {/* Tactile email + copy dock matching navbar Search ⌘K */}
-              <div className="inline-flex items-center gap-1 rounded-xl bg-surface p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.2),0_2px_6px_rgba(0,0,0,0.14)]">
+              <div className="tactile-dock">
                 <a
                   href={`mailto:${PROFILE.email}`}
                   onMouseEnter={() => mailRef.current?.startAnimation()}
@@ -221,7 +236,7 @@ export function Footer() {
                 </button>
               </div>
 
-              <div className="inline-flex items-center rounded-xl bg-surface p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.2),0_2px_6px_rgba(0,0,0,0.14)]">
+              <div className="tactile-dock">
                 <Link
                   href="/resume"
                   onMouseEnter={() => resumeRef.current?.startAnimation()}
@@ -231,17 +246,18 @@ export function Footer() {
                   <FileTextIcon ref={resumeRef} size={15} className="text-text-secondary" />
                   <EditorialText>Resume</EditorialText>
                   <ArrowUpRight
-                    className="h-3.5 w-3.5 text-text-muted transition-transform duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-text"
+                    className="arrow-glide h-3.5 w-3.5 text-text-muted group-hover:text-text"
                     strokeWidth={1.7}
                   />
                 </Link>
               </div>
-            </div>
+              </div>
+            </ScrollReveal>
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:gap-12 lg:col-span-5 lg:justify-self-end">
-            <div>
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-text/90">
+            <ScrollReveal y={14} delay={0.4}>
+              <p className="eyebrow">
                 Jump to
               </p>
               <ul className="mt-4 space-y-2.5 text-sm font-medium">
@@ -260,10 +276,10 @@ export function Footer() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </ScrollReveal>
 
-            <div>
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-text/90">
+            <ScrollReveal y={14} delay={0.55}>
+              <p className="eyebrow">
                 Connect
               </p>
               <ul className="mt-4 space-y-2.5 text-sm font-medium">
@@ -276,7 +292,7 @@ export function Footer() {
                   >
                     <EditorialText>GitHub</EditorialText>
                     <ArrowUpRight
-                      className="h-3.5 w-3.5 text-text/90 transition-transform duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-text"
+                      className="arrow-glide h-3.5 w-3.5 text-text/90 group-hover:text-text"
                       strokeWidth={1.9}
                     />
                   </a>
@@ -290,7 +306,7 @@ export function Footer() {
                   >
                     <EditorialText>LinkedIn</EditorialText>
                     <ArrowUpRight
-                      className="h-3.5 w-3.5 text-text/90 transition-transform duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-text"
+                      className="arrow-glide h-3.5 w-3.5 text-text/90 group-hover:text-text"
                       strokeWidth={1.9}
                     />
                   </a>
@@ -316,20 +332,57 @@ export function Footer() {
                   Hyderabad, IN
                 </li>
               </ul>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
-        </ScrollReveal>
 
-        {/* Monumental architectural wordmark sitting flush on the colophon hairline */}
-        <div
+        {/* Monumental architectural wordmark — per-letter masked baseline rise that triggers GradientASCII */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: "some" }}
           aria-hidden="true"
           className="select-none overflow-hidden px-3 pt-4 text-center sm:px-6 sm:pt-6"
         >
-          <p className="font-brand -mb-[0.14em] whitespace-nowrap bg-gradient-to-b from-text/28 via-text/14 to-transparent bg-clip-text text-[clamp(3.2rem,12.6vw,9.2rem)] font-normal leading-[0.8] tracking-normal text-transparent">
-            Shivam Diwan
+          <p className="font-brand -mb-[0.14em] inline-flex whitespace-nowrap text-[clamp(3.2rem,12.6vw,9.2rem)] font-normal leading-[0.8] tracking-normal">
+            {WORDMARK_CHARS.map((char, idx) => (
+              <motion.span
+                key={`${idx}-${char}`}
+                variants={
+                  shouldReduceMotion
+                    ? { hidden: { opacity: 0 }, visible: { opacity: 1 } }
+                    : {
+                        hidden: {
+                          y: "110%",
+                          opacity: 0,
+                          filter: "blur(6px)",
+                        },
+                        visible: {
+                          y: "0%",
+                          opacity: 1,
+                          filter: "blur(0px)",
+                          transition: {
+                            duration: 0.64,
+                            delay: 0.1 + idx * 0.034,
+                            ease: [0.22, 1, 0.36, 1],
+                          },
+                        },
+                      }
+                }
+                onAnimationStart={
+                  idx === WORDMARK_CHARS.length - 1
+                    ? (definition) => {
+                        if (definition === "visible") setGradientActive(true);
+                      }
+                    : undefined
+                }
+                className="inline-block -mx-[0.06em] bg-gradient-to-b from-text/28 via-text/14 to-transparent bg-clip-text px-[0.06em] text-transparent"
+              >
+                {char === " " ? "\u00A0" : char}
+              </motion.span>
+            ))}
           </p>
-        </div>
+        </motion.div>
 
         {/* Thin colophon bar */}
         <div className="flex flex-col items-start justify-between gap-4 border-t border-border px-6 py-5 sm:flex-row sm:items-center sm:px-10">

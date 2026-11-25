@@ -10,7 +10,7 @@ import {
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowUpRight, Check, Copy } from "lucide-react";
+import { ArrowUpRight, Check, Copy, Heart } from "lucide-react";
 import { PROFILE } from "@/constants/profile";
 import { EditorialText } from "@/components/ui/EditorialText";
 import { BriefcaseIcon } from "@/components/icons/briefcase-icon";
@@ -78,10 +78,44 @@ export function OverviewRow({
   const handleLeave = () => iconRef.current?.stopAnimation();
 
   const iconBox = (
-    <span className="flex h-5 w-5 shrink-0 items-center justify-center text-text-muted transition-colors duration-150 group-hover:text-text">
+    <motion.span
+      initial={
+        shouldReduceMotion || revealDelay === undefined
+          ? false
+          : { opacity: 0, scale: 0.6 }
+      }
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{
+        type: "spring",
+        stiffness: 380,
+        damping: 24,
+        delay: revealDelay ?? 0,
+      }}
+      className="flex h-5 w-5 shrink-0 items-center justify-center text-text-muted transition-colors duration-150 group-hover:text-text"
+    >
       <IconComponent ref={iconRef} size={18} />
-    </span>
+    </motion.span>
   );
+
+  const revealedText =
+    shouldReduceMotion || revealDelay === undefined ? (
+      children
+    ) : (
+      <span className="inline-flex min-w-0 overflow-hidden">
+        <motion.span
+          initial={{ opacity: 0, y: "100%" }}
+          animate={{ opacity: 1, y: "0%" }}
+          transition={{
+            duration: 0.56,
+            delay: revealDelay + 0.06,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+          className="inline-flex min-w-0 items-center"
+        >
+          {children}
+        </motion.span>
+      </span>
+    );
 
   if (href) {
     return (
@@ -94,10 +128,10 @@ export function OverviewRow({
         className="pressable group -mx-2 flex min-h-9 items-center gap-3 rounded-md px-2 transition-colors duration-150 hover:bg-surface/70"
       >
         {iconBox}
-        {children}
+        {revealedText}
         {external && (
           <ArrowUpRight
-            className="-ml-1 h-3.5 w-3.5 text-text-muted transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-text"
+            className="arrow-glide -ml-1 h-3.5 w-3.5 text-text-muted group-hover:text-text"
             strokeWidth={1.5}
           />
         )}
@@ -112,7 +146,7 @@ export function OverviewRow({
       className="group flex min-h-9 items-center gap-3"
     >
       {iconBox}
-      {children}
+      {revealedText}
     </div>
   );
 }
@@ -267,7 +301,7 @@ export function IdentityShowcase() {
                 type: "spring",
                 stiffness: 240,
                 damping: 20,
-                delay: 0.48,
+                delay: 0.26,
               }
           }
           className="inline-flex h-12 w-12 shrink-0 translate-y-[3px] cursor-pointer items-center justify-center focus:outline-none sm:h-14 sm:w-14 md:h-[66px] md:w-[66px]"
@@ -328,28 +362,27 @@ export function IdentityShowcase() {
             {active.text}
           </span>
         ) : (
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence mode="wait">
             <motion.span
               key={active.text}
               exit={{
                 opacity: 0,
                 y: -4,
-                filter: "blur(4px)",
-                transition: { duration: 0.2, ease: [0.32, 0.72, 0, 1] },
+                transition: { duration: 0.18, ease: [0.32, 0.72, 0, 1] },
               }}
               className="flex flex-wrap items-center justify-center gap-x-[0.38em] font-mono text-xs text-text-secondary sm:text-[13px]"
             >
               {active.text.split(" ").map((word, wordIdx) => (
                 <motion.span
                   key={`${active.text}-${wordIdx}`}
-                  initial={{ opacity: 0, y: 6, filter: "blur(4px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{
-                    duration: 0.36,
-                    delay: 0.08 + wordIdx * 0.04,
+                    duration: 0.44,
+                    delay: (index === 0 ? 0.62 : 0.04) + wordIdx * 0.045,
                     ease: [0.22, 1, 0.36, 1],
                   }}
-                  className="inline-block will-change-transform"
+                  className="inline-block"
                 >
                   {word}
                 </motion.span>
@@ -399,10 +432,12 @@ export function CopyToast({
   open,
   title,
   detail,
+  icon = "check",
 }: {
   open: boolean;
   title: string;
   detail: string;
+  icon?: "check" | "heart";
 }) {
   const shouldReduceMotion = useReducedMotion();
   if (typeof document === "undefined") return null;
@@ -428,15 +463,25 @@ export function CopyToast({
               ? { opacity: 0 }
               : { opacity: 0, transform: "translateY(8px) scale(0.95)" }
           }
-          transition={{ duration: 0.22, ease: EASE_OUT }}
-          className="pointer-events-none fixed bottom-6 right-6 z-[80] flex origin-bottom-right items-center gap-2.5 rounded-lg border border-border-strong bg-surface px-4 py-2.5 shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
+          transition={{ duration: 0.24, ease: EASE_OUT }}
+          className="tactile-dock pointer-events-none fixed bottom-6 right-6 z-[80] origin-bottom-right shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.2),0_12px_36px_rgba(0,0,0,0.42)]"
         >
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-text text-bg">
-            <Check className="h-3 w-3" strokeWidth={2.2} />
+          <span
+            className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+              icon === "heart" ? "text-[#f43f5e]" : "text-text"
+            }`}
+          >
+            {icon === "heart" ? (
+              <Heart className="h-4 w-4 fill-[#f43f5e]" strokeWidth={2} />
+            ) : (
+              <Check className="h-4 w-4" strokeWidth={2.2} />
+            )}
           </span>
-          <span className="text-sm font-medium text-text">{title}</span>
-          <span className="hidden font-mono text-xs text-text-muted sm:inline">
-            {detail}
+          <span className="tactile-key h-8 cursor-default gap-2 px-3 py-0">
+            <span className="text-xs font-medium text-text">{title}</span>
+            <span className="hidden font-mono text-[11px] text-text-muted sm:inline">
+              {detail}
+            </span>
           </span>
         </motion.div>
       )}
@@ -486,7 +531,21 @@ export function CopyEmailRow({ revealDelay }: { revealDelay?: number }) {
         aria-label="Copy email address"
         className="pressable group -mx-2 flex min-h-9 w-[calc(100%+1rem)] cursor-pointer items-center gap-3 rounded-md px-2 text-left transition-colors duration-150 hover:bg-surface/70"
       >
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center text-text-muted transition-colors duration-150 group-hover:text-text">
+        <motion.span
+          initial={
+            shouldReduceMotion || revealDelay === undefined
+              ? false
+              : { opacity: 0, scale: 0.6 }
+          }
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            type: "spring",
+            stiffness: 380,
+            damping: 24,
+            delay: revealDelay ?? 0,
+          }}
+          className="flex h-5 w-5 shrink-0 items-center justify-center text-text-muted transition-colors duration-150 group-hover:text-text"
+        >
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
               key={copied ? "check" : "mail"}
@@ -515,10 +574,24 @@ export function CopyEmailRow({ revealDelay }: { revealDelay?: number }) {
               )}
             </motion.span>
           </AnimatePresence>
-        </span>
+        </motion.span>
 
-        <span className="relative min-w-0 flex-1 truncate font-mono text-sm text-text">
-          <AnimatePresence mode="wait" initial={false}>
+        <span className="relative min-w-0 flex-1 overflow-hidden font-mono text-sm text-text">
+          <motion.span
+            initial={
+              shouldReduceMotion || revealDelay === undefined
+                ? false
+                : { opacity: 0, y: "100%" }
+            }
+            animate={{ opacity: 1, y: "0%" }}
+            transition={{
+              duration: 0.56,
+              delay: (revealDelay ?? 0) + 0.06,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="block truncate"
+          >
+            <AnimatePresence mode="wait" initial={false}>
             <motion.span
               key={copied ? "copied" : "email"}
               initial={
@@ -542,6 +615,7 @@ export function CopyEmailRow({ revealDelay }: { revealDelay?: number }) {
               {copied ? "Copied to clipboard" : PROFILE.email}
             </motion.span>
           </AnimatePresence>
+          </motion.span>
         </span>
 
         <Copy

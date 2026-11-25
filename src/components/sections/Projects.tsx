@@ -17,7 +17,7 @@ import {
 } from "@/constants/projects";
 import { TechLogo } from "@/components/sections/skills/TechIcons";
 import { SectionDivider } from "@/components/ui/SectionDivider";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { ScrollHeading, ScrollReveal } from "@/components/ui/ScrollReveal";
 
 const DRAWER_EASE: [number, number, number, number] = [0.32, 0.72, 0, 1];
 
@@ -543,16 +543,18 @@ export function Projects() {
 
   return (
     <section id="projects" className="w-full scroll-mt-16">
-      <div className="mx-auto max-w-5xl border-x border-border">
+      <div className="section-shell">
         <div className="border-b border-border px-6 py-3 sm:px-10">
-          <h2 className="font-brand text-3xl font-normal leading-none tracking-normal text-text">
-            Projects
-          </h2>
+          <ScrollHeading>
+            <h2 className="section-title">
+              Projects
+            </h2>
+          </ScrollHeading>
         </div>
 
         <div className="divide-y divide-border">
           {FEATURED_PROJECTS.map((project, index) => (
-            <ScrollReveal key={project.id} y={18} delay={index * 0.06}>
+            <ScrollReveal key={project.id} y={14} delay={0.06 + index * 0.08}>
               <ProjectRow
                 project={project}
                 isOpen={openId === project.id}

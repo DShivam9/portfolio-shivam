@@ -2,11 +2,11 @@ import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { PROFILE } from "@/constants/profile";
 import { EditorialText } from "@/components/ui/EditorialText";
+import { ScrollHeading, ScrollReveal } from "@/components/ui/ScrollReveal";
 import { SectionDivider } from "@/components/ui/SectionDivider";
 import {
   CopyEmailRow,
   DiscordSocialCard,
-  HeroReveal,
   IdentityShowcase,
   LiveClock,
   OverviewRow,
@@ -41,13 +41,13 @@ export function Hero() {
   return (
     <section id="top" className="w-full">
       {/* Block 1 — Profile Header */}
-      <div className="mx-auto max-w-5xl border-x border-border">
+      <div className="section-shell">
         <div className="flex flex-col sm:flex-row sm:items-stretch">
           <div className="flex-1 overflow-hidden">
             <IdentityShowcase />
           </div>
 
-          <div className="w-full shrink-0 border-t border-border p-2.5 sm:w-72 sm:border-l sm:border-t-0 md:w-80">
+          <div className="rail-reveal w-full shrink-0 border-t border-border p-2.5 sm:w-72 sm:border-l sm:border-t-0 md:w-80">
             <Portrait3D />
           </div>
         </div>
@@ -56,100 +56,82 @@ export function Hero() {
       <SectionDivider />
 
       {/* Block 2 — Clean Structured Overview (1 Full-Width Lead + Balanced 4x2 Grid) */}
-      <div className="mx-auto max-w-5xl border-x border-border">
+      <div className="section-shell">
         <div className="flex flex-col gap-2.5 px-6 py-6 sm:px-10 sm:py-7">
-          <HeroReveal delay={1.15}>
-            <OverviewRow icon="briefcase" revealDelay={1.15}>
-              <span className="font-mono text-sm text-text">
-                Open to SWE, Full-Stack &amp; Creative Frontend roles
-              </span>
-            </OverviewRow>
-          </HeroReveal>
+          <OverviewRow icon="briefcase" revealDelay={0.36}>
+            <span className="font-mono text-sm text-text">
+              Open to SWE, Full-Stack &amp; Creative Frontend roles
+            </span>
+          </OverviewRow>
 
           <div className="grid grid-cols-1 gap-x-10 gap-y-2.5 sm:grid-cols-2">
             {/* Row 1: Role | Pronouns */}
-            <HeroReveal delay={1.2}>
-              <OverviewRow icon="code" revealDelay={1.2}>
-                <span className="font-mono text-sm text-text">
-                  Full-Stack Engineer &amp; UI Craft
-                </span>
-              </OverviewRow>
-            </HeroReveal>
+            <OverviewRow icon="code" revealDelay={0.41}>
+              <span className="font-mono text-sm text-text">
+                Full-Stack Engineer &amp; UI Craft
+              </span>
+            </OverviewRow>
 
-            <HeroReveal delay={1.26}>
-              <OverviewRow icon="user" revealDelay={1.26}>
-                <span className="font-mono text-sm text-text">he/him</span>
-              </OverviewRow>
-            </HeroReveal>
+            <OverviewRow icon="user" revealDelay={0.46}>
+              <span className="font-mono text-sm text-text">he/him</span>
+            </OverviewRow>
 
             {/* Row 2: Education | Resume */}
-            <HeroReveal delay={1.32}>
-              <OverviewRow icon="grad" revealDelay={1.32}>
-                <span className="font-mono text-sm text-text">
-                  B.Tech CSBS · GITAM University{" "}
-                  <span className="text-text-muted">(9.0)</span>
-                </span>
-              </OverviewRow>
-            </HeroReveal>
+            <OverviewRow icon="grad" revealDelay={0.51}>
+              <span className="font-mono text-sm text-text">
+                B.Tech CSBS · GITAM University{" "}
+                <span className="text-text-muted">(9.0)</span>
+              </span>
+            </OverviewRow>
 
-            <HeroReveal delay={1.38}>
-              <OverviewRow icon="resume" href="/resume" revealDelay={1.38}>
-                <span className="font-mono text-sm text-text">Resume</span>
-              </OverviewRow>
-            </HeroReveal>
+            <OverviewRow icon="resume" href="/resume" revealDelay={0.56}>
+              <span className="font-mono text-sm text-text">Resume</span>
+            </OverviewRow>
 
             {/* Row 3: Location | Email */}
-            <HeroReveal delay={1.44}>
-              <OverviewRow icon="pin" revealDelay={1.44}>
-                <span className="inline-flex items-center gap-2 font-mono text-sm text-text">
-                  <span>{PROFILE.location}</span>
-                  <svg
-                    viewBox="0 0 24 16"
-                    aria-label="India"
-                    className="h-3 w-4.5 shrink-0 rounded-[2px] ring-1 ring-white/15"
-                  >
-                    <rect width="24" height="5.33" fill="#FF9933" />
-                    <rect y="5.33" width="24" height="5.34" fill="#FFFFFF" />
-                    <rect y="10.67" width="24" height="5.33" fill="#138808" />
-                    <circle
-                      cx="12"
-                      cy="8"
-                      r="1.9"
-                      fill="none"
-                      stroke="#000080"
-                      strokeWidth="0.7"
-                    />
-                    <circle cx="12" cy="8" r="0.5" fill="#000080" />
-                  </svg>
-                </span>
-              </OverviewRow>
-            </HeroReveal>
+            <OverviewRow icon="pin" revealDelay={0.61}>
+              <span className="inline-flex items-center gap-2 font-mono text-sm text-text">
+                <span>{PROFILE.location}</span>
+                <svg
+                  viewBox="0 0 24 16"
+                  aria-label="India"
+                  className="h-3 w-4.5 shrink-0 rounded-[2px] ring-1 ring-white/15"
+                >
+                  <rect width="24" height="5.33" fill="#FF9933" />
+                  <rect y="5.33" width="24" height="5.34" fill="#FFFFFF" />
+                  <rect y="10.67" width="24" height="5.33" fill="#138808" />
+                  <circle
+                    cx="12"
+                    cy="8"
+                    r="1.9"
+                    fill="none"
+                    stroke="#000080"
+                    strokeWidth="0.7"
+                  />
+                  <circle cx="12" cy="8" r="0.5" fill="#000080" />
+                </svg>
+              </span>
+            </OverviewRow>
 
-            <HeroReveal delay={1.5}>
-              <CopyEmailRow revealDelay={1.5} />
-            </HeroReveal>
+            <CopyEmailRow revealDelay={0.66} />
 
             {/* Row 4: Live Time | Phone */}
-            <HeroReveal delay={1.56}>
-              <OverviewRow icon="clock" revealDelay={1.56}>
-                <LiveClock
-                  showSeconds
-                  className="font-mono text-sm tabular-nums text-text"
-                />
-              </OverviewRow>
-            </HeroReveal>
+            <OverviewRow icon="clock" revealDelay={0.71}>
+              <LiveClock
+                showSeconds
+                className="font-mono text-sm tabular-nums text-text"
+              />
+            </OverviewRow>
 
-            <HeroReveal delay={1.62}>
-              <OverviewRow
-                icon="phone"
-                href={`tel:${PROFILE.phone.replace(/\s+/g, "")}`}
-                revealDelay={1.62}
-              >
-                <span className="font-mono text-sm tabular-nums text-text">
-                  {PROFILE.phone}
-                </span>
-              </OverviewRow>
-            </HeroReveal>
+            <OverviewRow
+              icon="phone"
+              href={`tel:${PROFILE.phone.replace(/\s+/g, "")}`}
+              revealDelay={0.76}
+            >
+              <span className="font-mono text-sm tabular-nums text-text">
+                {PROFILE.phone}
+              </span>
+            </OverviewRow>
           </div>
         </div>
       </div>
@@ -157,18 +139,18 @@ export function Hero() {
       <SectionDivider />
 
       {/* Block 3 — Dedicated 2x2 Social Cards */}
-      <div className="mx-auto max-w-5xl border-x border-border">
+      <div className="section-shell">
         <div className="border-b border-border px-6 py-2.5 sm:px-10">
-          <h2 className="font-brand text-3xl font-normal leading-none tracking-normal text-text">
-            Socials
-          </h2>
+          <ScrollHeading>
+            <h2 className="section-title">Socials</h2>
+          </ScrollHeading>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 [&>*]:border-b [&>*]:border-border [&>*:last-child]:border-b-0 sm:[&>*:nth-child(odd)]:border-r sm:[&>*:nth-last-child(-n+2)]:border-b-0">
           {SOCIAL_LINKS.map((item, idx) => (
-            <HeroReveal
+            <ScrollReveal
               key={item.label}
-              delay={1.55 + idx * 0.06}
-              mask={false}
+              variant="card"
+              delay={0.08 + idx * 0.11}
               className="p-3 sm:p-3.5"
             >
               <a
@@ -195,15 +177,15 @@ export function Hero() {
                   </div>
                 </div>
                 <ArrowUpRight
-                  className="h-4 w-4 shrink-0 text-text-muted transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-text"
+                  className="arrow-glide h-4 w-4 shrink-0 text-text-muted group-hover:text-text"
                   strokeWidth={1.5}
                 />
               </a>
-            </HeroReveal>
+            </ScrollReveal>
           ))}
-          <HeroReveal delay={1.73} mask={false} className="p-3 sm:p-3.5">
+          <ScrollReveal variant="card" delay={0.41} className="p-3 sm:p-3.5">
             <DiscordSocialCard />
-          </HeroReveal>
+          </ScrollReveal>
         </div>
       </div>
 

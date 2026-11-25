@@ -30,7 +30,7 @@ import {
 import { PROFILE } from "@/constants/profile";
 import { EditorialText } from "@/components/ui/EditorialText";
 import { SectionDivider } from "@/components/ui/SectionDivider";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { ScrollHeading, ScrollReveal } from "@/components/ui/ScrollReveal";
 import {
   useMusicPlayer,
   type TimeListener,
@@ -264,14 +264,28 @@ const TrackList = memo(function TrackList({
 
   return (
     <>
-      {items.map(({ track, origIndex }) => {
+      {items.map(({ track, origIndex }, idx) => {
         const isActive = origIndex === activeIndex;
         const isTrackPlaying = isActive && isPlaying;
+        const staggerDelay = Math.min(idx, 10) * 0.035;
         return (
           <motion.button
             key={`${track.id}-${origIndex}`}
             layout={reduceMotion ? false : "position"}
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: "some" }}
             transition={{
+              opacity: {
+                duration: 0.42,
+                delay: staggerDelay,
+                ease: [0.22, 1, 0.36, 1],
+              },
+              y: {
+                duration: 0.42,
+                delay: staggerDelay,
+                ease: [0.22, 1, 0.36, 1],
+              },
               layout: {
                 type: "spring",
                 stiffness: 220,
@@ -579,12 +593,12 @@ export function Music() {
         <div ref={ytHostBRef} />
       </div>
 
-      <div className="mx-auto max-w-5xl border-x border-border">
+      <div className="section-shell">
         {/* Section Heading Bar */}
         <div className="flex items-center justify-between border-b border-border px-6 py-2.5 sm:px-10">
-          <h2 className="font-brand text-3xl font-normal leading-none tracking-normal text-text">
-            Jukebox
-          </h2>
+          <ScrollHeading>
+            <h2 className="section-title">Jukebox</h2>
+          </ScrollHeading>
           <a
             href={PROFILE.socials.spotifyPlaylist}
             target="_blank"
@@ -600,11 +614,15 @@ export function Music() {
         </div>
 
         {/* Main 2-Column Stage */}
-        <ScrollReveal y={22}>
         <div className="grid grid-cols-1 lg:grid-cols-12">
           {/* Left: Borderless Moody Blurred Album-Art Now-Playing Widget */}
           <div className="flex items-center justify-center border-b border-border p-6 sm:p-8 lg:col-span-5 lg:border-b-0 lg:border-r">
-            <div className="relative flex w-full max-w-[336px] flex-col overflow-hidden rounded-[28px] bg-[#111114] p-6 ring-1 ring-inset ring-white/10 [box-shadow:var(--music-card-shadow)] [contain:layout_paint]">
+            <ScrollReveal
+              variant="card"
+              delay={0.02}
+              className="w-full max-w-[336px]"
+            >
+              <div className="relative flex w-full flex-col overflow-hidden rounded-[28px] bg-[#111114] p-6 ring-1 ring-inset ring-white/10 [box-shadow:var(--music-card-shadow)] [contain:layout_paint]">
               {/* Overlapping interruptible album-art backdrop crossfade on isolated GPU layer */}
               <AnimatePresence initial={false}>
                 {activeCover && (
@@ -701,7 +719,19 @@ export function Music() {
                 </div>
 
                 {/* Centered Large Rotating Music-Art Disc */}
-                <div className="mb-7 mt-7 flex items-center justify-center">
+                <motion.div
+                  initial={
+                    shouldReduceMotion ? false : { opacity: 0, scale: 0.92 }
+                  }
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, amount: "some" }}
+                  transition={{
+                    duration: 0.6,
+                    delay: 0.12,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="mb-7 mt-7 flex items-center justify-center"
+                >
                   <button
                     type="button"
                     onClick={player.togglePlay}
@@ -782,10 +812,10 @@ export function Music() {
                       </span>
                     </span>
                   </button>
-                </div>
+                </motion.div>
 
                 {/* Song Title + Artist with smooth crossfade */}
-                <div className="min-h-[46px] min-w-0">
+                <ScrollReveal y={10} delay={0.22} className="min-h-[46px] min-w-0">
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key={activeTrack?.id ?? "idle"}
@@ -820,17 +850,19 @@ export function Music() {
                       </p>
                     </motion.div>
                   </AnimatePresence>
-                </div>
+                </ScrollReveal>
 
                 {/* Isolated 0-rerender Progress Bar */}
-                <PlaybackProgressBar
-                  duration={player.duration}
-                  subscribeTime={player.subscribeTime}
-                  onSeek={player.seekTo}
-                />
+                <ScrollReveal y={8} delay={0.3}>
+                  <PlaybackProgressBar
+                    duration={player.duration}
+                    subscribeTime={player.subscribeTime}
+                    onSeek={player.seekTo}
+                  />
+                </ScrollReveal>
 
                 {/* Transport Controls */}
-                <div className="mt-4 flex items-center justify-between px-1">
+                <ScrollReveal y={10} delay={0.38} className="mt-4 flex items-center justify-between px-1">
                   <button
                     type="button"
                     onClick={() => player.setShuffle((prev) => !prev)}
@@ -923,7 +955,7 @@ export function Music() {
                       <span className="absolute -bottom-0.5 h-1 w-1 rounded-full bg-[#1DB954]" />
                     )}
                   </button>
-                </div>
+                </ScrollReveal>
 
                 {/* Playful hand-drawn loop-de-loop arrow callout pointing to Play button when idle */}
                 <div className="relative -mb-2 mt-1 flex h-8 items-end justify-center">
@@ -1019,11 +1051,16 @@ export function Music() {
                 </div>
               </div>
             </div>
+            </ScrollReveal>
           </div>
 
           {/* Right: Open, Native-Feel Spotify Tracklist Queue ↔ Lyrics View */}
           <div className="flex flex-col lg:col-span-7">
-            <div className="flex min-h-[46px] items-center justify-between gap-3 px-6 pb-2 pt-5 sm:px-7">
+            <ScrollReveal
+              y={10}
+              delay={0.14}
+              className="flex min-h-[46px] items-center justify-between gap-3 px-6 pb-2 pt-5 sm:px-7"
+            >
               <div className="relative min-w-0 overflow-hidden">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.span
@@ -1181,7 +1218,7 @@ export function Music() {
                   </button>
                 </div>
               )}
-            </div>
+            </ScrollReveal>
 
             <div className="relative h-[440px] flex-1 overflow-hidden lg:h-[496px]">
               <div
@@ -1226,7 +1263,7 @@ export function Music() {
                   <motion.div
                     key="playlist-view"
                     layoutScroll
-                    data-lenis-prevent
+                    data-scroll-handoff
                     initial={
                       shouldReduceMotion
                         ? { opacity: 0 }
@@ -1239,7 +1276,7 @@ export function Music() {
                         : { opacity: 0, scale: 0.96, y: -14 }
                     }
                     transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
-                    className="no-scrollbar absolute inset-0 space-y-0.5 overflow-y-auto px-3 pb-12 pt-3 will-change-transform sm:px-4"
+                    className="no-scrollbar absolute inset-0 space-y-0.5 overflow-y-auto overscroll-contain px-3 pb-12 pt-3 will-change-transform sm:px-4"
                   >
                     <LayoutGroup id="music-playlist">
                       <TrackList
@@ -1269,7 +1306,6 @@ export function Music() {
             </div>
           </div>
         </div>
-        </ScrollReveal>
       </div>
 
       <SectionDivider />

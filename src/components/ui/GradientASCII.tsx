@@ -58,6 +58,8 @@ export interface GradientASCIIProps extends HTMLAttributes<HTMLDivElement> {
   /** Defer intro reveal and WebGL loop until the container scrolls into view */
   startWhenInView?: boolean;
   viewThreshold?: number;
+  /** Gate playback until parent signals ready (e.g. after hero/wordmark reveal) */
+  active?: boolean;
 }
 
 interface ProgramBundle {
@@ -271,6 +273,7 @@ export function GradientASCII({
   dpr,
   startWhenInView = true,
   viewThreshold = 0.45,
+  active = true,
   className = "",
   style,
   ...rest
@@ -278,6 +281,8 @@ export function GradientASCII({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wakeRef = useRef<(() => void) | null>(null);
+  const activeRef = useRef(active);
+  const activateRef = useRef<(() => void) | null>(null);
 
   const palette = (
     Array.isArray(colors) && colors.length ? colors : DEFAULT_COLORS
@@ -340,6 +345,11 @@ export function GradientASCII({
     settings.fontFamily,
     settings.dpr,
   ]);
+
+  useEffect(() => {
+    activeRef.current = active;
+    if (active) activateRef.current?.();
+  }, [active]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -765,7 +775,7 @@ export function GradientASCII({
       (entries) => {
         const isInView = entries.some((entry) => entry.isIntersecting);
         visible = isInView;
-        if (isInView) {
+        if (isInView && activeRef.current) {
           started = true;
           last = 0;
           refreshRect();
@@ -783,6 +793,14 @@ export function GradientASCII({
     document.addEventListener("visibilitychange", onVisibility);
     resize();
     wakeRef.current = wake;
+    activateRef.current = () => {
+      if (visible && !started) {
+        started = true;
+        last = 0;
+        refreshRect();
+        wake();
+      }
+    };
 
     const dispose = () => {
       if (disposed) return;
@@ -790,6 +808,7 @@ export function GradientASCII({
       cancelAnimationFrame(raf);
       if (resizeRaf) cancelAnimationFrame(resizeRaf);
       wakeRef.current = null;
+      activateRef.current = null;
       resizeObserver.disconnect();
       intersection.disconnect();
       window.removeEventListener("pointermove", onPointerMove);

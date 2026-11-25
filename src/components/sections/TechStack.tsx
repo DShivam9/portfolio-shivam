@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
 import {
   TECH_CATEGORIES,
@@ -18,9 +18,10 @@ import {
 } from "@/constants/techStack";
 import { TechLogo } from "@/components/sections/skills/TechIcons";
 import { SectionDivider } from "@/components/ui/SectionDivider";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { ScrollHeading, ScrollReveal } from "@/components/ui/ScrollReveal";
 
 const TAB_SPRING = { type: "spring" as const, duration: 0.24, bounce: 0 };
+const REVEAL_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const TECH_BY_ID = new Map<string, TechItem>(
   TECH_STACK.map((item) => [item.id, item]),
 );
@@ -30,6 +31,7 @@ interface TechGridProps {
   pinnedId: string | null;
   autoId: string | null;
   connectedSet: ReadonlySet<string> | null;
+  revealed: boolean;
   onInspect: (id: string | null) => void;
   onTogglePin: (id: string) => void;
 }
@@ -40,15 +42,19 @@ const TechGrid = memo(function TechGrid({
   pinnedId,
   autoId,
   connectedSet,
+  revealed,
   onInspect,
   onTogglePin,
 }: TechGridProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <div
       onMouseLeave={() => onInspect(null)}
       className="grid grid-cols-3 gap-px border-b border-border bg-border sm:grid-cols-6 lg:grid-cols-9"
     >
-      {TECH_STACK.map((item) => {
+      {TECH_STACK.map((item, idx) => {
+        const waveDelay = 0.16 + ((idx % 9) + Math.floor(idx / 9)) * 0.048;
         const isPinned = pinnedId === item.id;
         const isAuto = !pinnedId && autoId === item.id;
         const isConnected = connectedSet ? connectedSet.has(item.id) : false;
@@ -130,9 +136,28 @@ const TechGrid = memo(function TechGrid({
             )}
 
             <span
-              className={`tech-tile-body relative z-10 flex h-full w-full flex-col items-center justify-center ${isDimmed ? "opacity-15" : "opacity-100"
-                }`}
+              className={`tech-tile-body relative z-10 flex h-full w-full flex-col items-center justify-center ${
+                isDimmed ? "opacity-15" : "opacity-100"
+              }`}
             >
+              <motion.span
+                initial={
+                  shouldReduceMotion
+                    ? false
+                    : { opacity: 0, y: 12, scale: 0.86, filter: "blur(4px)" }
+                }
+                animate={
+                  revealed || shouldReduceMotion
+                    ? { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
+                    : { opacity: 0, y: 12, scale: 0.86, filter: "blur(4px)" }
+                }
+                transition={{
+                  duration: 0.62,
+                  delay: waveDelay,
+                  ease: REVEAL_EASE,
+                }}
+                className="flex h-full w-full flex-col items-center justify-center"
+              >
               <span className="tech-tile-icon flex h-8 w-8 items-center justify-center">
                 <TechLogo id={item.id} name={item.name} />
               </span>
@@ -154,6 +179,7 @@ const TechGrid = memo(function TechGrid({
                   ))}
                 </span>
               </span>
+              </motion.span>
             </span>
           </button>
         );
@@ -169,6 +195,8 @@ export function TechStack() {
   const [autoId, setAutoId] = useState<string | null>(null);
   const [isInView, setIsInView] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const gridInView = useInView(gridRef, { once: true, amount: 0.35 });
   const shouldReduceMotion = useReducedMotion();
 
   const visibleIds = useMemo(
@@ -264,17 +292,18 @@ export function TechStack() {
 
   return (
     <section ref={sectionRef} id="skills" className="w-full scroll-mt-16">
-      <div className="mx-auto max-w-5xl border-x border-border">
+      <div className="section-shell">
         {/* Header + tactile segmented category pills matching navbar Search ⌘K */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-2.5 sm:px-10">
-          <h2 className="font-brand text-3xl font-normal leading-none tracking-normal text-text">
-            Stack
-          </h2>
+          <ScrollHeading>
+            <h2 className="section-title">Stack</h2>
+          </ScrollHeading>
 
+          <ScrollReveal y={8} delay={0.08}>
           <div
             role="tablist"
             aria-label="Filter tech stack by category"
-            className="inline-flex flex-wrap items-center gap-0.5 rounded-xl bg-surface p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.2),0_2px_6px_rgba(0,0,0,0.14)]"
+            className="tactile-dock flex-wrap gap-0.5"
           >
             {TECH_CATEGORIES.map((tab) => {
               const isSelected = category === tab.id;
@@ -310,21 +339,32 @@ export function TechStack() {
               );
             })}
           </div>
+          </ScrollReveal>
         </div>
 
-        <ScrollReveal y={20}>
+        <div ref={gridRef}>
           <TechGrid
             category={category}
             pinnedId={pinnedId}
             autoId={activeAutoId}
             connectedSet={connectedSet}
+            revealed={gridInView}
             onInspect={handleInspect}
             onTogglePin={handleTogglePin}
           />
-        </ScrollReveal>
+        </div>
 
         {/* Fixed-height Inspector Bar (instant zero-overhead swap for aggressive scrubbing) */}
-        <div className="flex min-h-[60px] items-center justify-between gap-4 px-6 py-3 sm:px-10">
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+          animate={
+            gridInView || shouldReduceMotion
+              ? { opacity: 1, y: 0 }
+              : { opacity: 0, y: 8 }
+          }
+          transition={{ duration: 0.56, delay: 0.55, ease: REVEAL_EASE }}
+          className="flex min-h-[60px] items-center justify-between gap-4 px-6 py-3 sm:px-10"
+        >
           {inspectedItem ? (
             <div className="flex w-full items-center justify-between gap-4">
               <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -384,7 +424,7 @@ export function TechStack() {
               </span>
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
 
       <SectionDivider />

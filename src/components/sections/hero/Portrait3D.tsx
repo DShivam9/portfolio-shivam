@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import {
+  AnimatePresence,
   motion,
   useMotionTemplate,
   useMotionValue,
@@ -16,6 +17,7 @@ const LIFT_SPRING = { stiffness: 180, damping: 26, mass: 0.75 };
 
 export function Portrait3D() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [hintDismissed, setHintDismissed] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
   const rawX = useMotionValue(0);
@@ -54,7 +56,16 @@ export function Portrait3D() {
   const fgTransform = useMotionTemplate`translate3d(${fgX}px, ${fgY}px, ${fgZ}px) scale(${fgScale})`;
   const fgFilter = useMotionTemplate`drop-shadow(${shadowX}px ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, ${shadowAlpha}))`;
 
+  const handlePointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse" && !hintDismissed) {
+      setHintDismissed(true);
+    }
+  };
+
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse" && !hintDismissed) {
+      setHintDismissed(true);
+    }
     if (shouldReduceMotion || e.pointerType !== "mouse") return;
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -74,6 +85,7 @@ export function Portrait3D() {
   return (
     <div
       ref={containerRef}
+      onPointerEnter={handlePointerEnter}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       className="relative aspect-[3/4] w-full select-none [perspective:950px]"
@@ -86,17 +98,20 @@ export function Portrait3D() {
         }
         className="relative h-full w-full"
       >
-        {/* Layer 1: Clipped backdrop card — bg mural fades in calmly after foreground subject */}
-        <div
+        {/* Layer 1: Clipped backdrop card — enters with portrait so no empty box sits alone */}
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.52, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
           style={{ transform: "translateZ(0px)" }}
           className="absolute inset-0 overflow-hidden rounded-[6px] bg-surface ring-1 ring-inset ring-white/10"
         >
           <motion.div
-            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.94 }}
+            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{
-              duration: 0.7,
-              delay: 0.9,
+              duration: 0.58,
+              delay: 0.28,
               ease: [0.22, 1, 0.36, 1],
             }}
             className="absolute inset-0"
@@ -131,9 +146,9 @@ export function Portrait3D() {
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/40 to-transparent"
           />
-        </div>
+        </motion.div>
 
-        {/* Layer 2: Tack-sharp foreground subject — fades in first before the backdrop appears */}
+        {/* Layer 2: Tack-sharp foreground subject — arrives right as card opens */}
         <motion.div
           style={
             shouldReduceMotion
@@ -154,8 +169,8 @@ export function Portrait3D() {
             }
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{
-              duration: 0.65,
-              delay: 0.55,
+              duration: 0.56,
+              delay: 0.16,
               ease: [0.22, 1, 0.36, 1],
             }}
             className="relative h-full w-full"
@@ -171,6 +186,83 @@ export function Portrait3D() {
           </motion.div>
         </motion.div>
       </motion.div>
+
+      {/* One-time playful hover callout — draws once on load, disappears permanently on first hover */}
+      <AnimatePresence>
+        {!hintDismissed && (
+          <motion.div
+            aria-hidden="true"
+            initial={
+              shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 6 }
+            }
+            animate={{
+              opacity: 1,
+              y: 0,
+              transition: {
+                duration: 0.42,
+                delay: 0.92,
+                ease: [0.22, 1, 0.36, 1],
+              },
+            }}
+            exit={
+              shouldReduceMotion
+                ? { opacity: 0, transition: { duration: 0.16 } }
+                : {
+                    opacity: 0,
+                    y: -4,
+                    transition: { duration: 0.24, ease: [0.22, 1, 0.36, 1] },
+                  }
+            }
+            className="pointer-events-none absolute left-[calc(100%+1.1rem)] top-[46%] z-20 hidden -translate-y-1/2 items-center gap-2 whitespace-nowrap text-text-muted [@media(hover:hover)]:xl:inline-flex"
+          >
+            <svg
+              viewBox="0 0 84 44"
+              fill="none"
+              className="h-11 w-[84px] overflow-visible"
+            >
+              <motion.path
+                d="M 80 28 C 68 35, 52 34, 48 22 C 45 14, 54 11, 56 18 C 58 26, 44 30, 30 25 C 18 21, 10 19, 4 19"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                initial={
+                  shouldReduceMotion
+                    ? { pathLength: 1 }
+                    : { pathLength: 0 }
+                }
+                animate={{ pathLength: 1 }}
+                transition={
+                  shouldReduceMotion
+                    ? { duration: 0 }
+                    : {
+                        duration: 0.72,
+                        delay: 1.0,
+                        ease: [0.22, 1, 0.36, 1],
+                      }
+                }
+              />
+              <motion.path
+                d="M 11.5 13.5 L 3.5 19 L 11.5 24.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={
+                  shouldReduceMotion
+                    ? { duration: 0 }
+                    : { duration: 0.2, delay: 1.62, ease: [0.22, 1, 0.36, 1] }
+                }
+              />
+            </svg>
+            <span className="-rotate-2 translate-y-1 font-brand text-[16px] italic leading-none tracking-wide">
+              try hovering
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

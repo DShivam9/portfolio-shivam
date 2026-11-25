@@ -101,6 +101,46 @@ body::-webkit-scrollbar {
   display: none;
 }
 
+@keyframes railReveal {
+  from {
+    border-color: transparent;
+  }
+  to {
+    border-color: var(--color-border);
+  }
+}
+
+@layer components {
+  .rail-reveal {
+    animation: railReveal 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .section-shell {
+    @apply mx-auto max-w-5xl border-x border-border;
+    animation: railReveal 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .section-title {
+    @apply font-brand text-3xl font-normal leading-none tracking-normal text-text;
+  }
+
+  .eyebrow {
+    @apply font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-text/90;
+  }
+
+  .tactile-dock {
+    @apply inline-flex items-center gap-1 rounded-xl bg-surface p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.2),0_2px_6px_rgba(0,0,0,0.14)];
+  }
+
+  .tactile-key {
+    @apply inline-flex cursor-pointer items-center gap-2 rounded-lg bg-bg px-3.5 py-2 text-xs font-medium text-text shadow-[inset_0_1px_2px_rgba(0,0,0,0.16)];
+  }
+
+  .arrow-glide {
+    @apply inline-block transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5;
+  }
+}
+
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
@@ -112,18 +152,18 @@ body {
   color: var(--color-bg);
 }
 
-/* Native View Transitions API: crisp GPU-composited theme reveal with zero muddy crossfade */
-::view-transition-old(root),
-::view-transition-new(root) {
+/* Native View Transitions API: live-page level-by-level SVG pixel-blip theme reveal */
+html[data-theme-transition="active"]::view-transition-old(root),
+html[data-theme-transition="active"]::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
 
-::view-transition-old(root) {
+html[data-theme-transition="active"]::view-transition-old(root) {
   z-index: 1;
 }
 
-::view-transition-new(root) {
+html[data-theme-transition="active"]::view-transition-new(root) {
   z-index: 9999;
 }
 

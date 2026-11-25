@@ -21,8 +21,11 @@ import { PROFILE } from "@/constants/profile";
 import { SearchIcon, type SearchIconHandle } from "@/components/icons/search-icon";
 import { SunIcon, type SunIconHandle } from "@/components/icons/sun-icon";
 import { MoonIcon, type MoonIconHandle } from "@/components/icons/moon-icon";
-import { editorialNavigate } from "@/utils/editorialNavigate";
+import { editorialNavigate, setSmoothScrollPaused } from "@/utils/editorialNavigate";
+import { runPixelThemeTransition } from "@/utils/pixelThemeTransition";
 import { InterlockingPattern } from "@/components/ui/SectionDivider";
+import { HeartLikeButton } from "@/components/navigation/HeartLikeButton";
+import { CopyToast } from "@/components/sections/hero/HeroInteractive";
 
 type CommandGroup = "Navigate" | "Links" | "Theme";
 
@@ -97,25 +100,6 @@ const GLIDE_SPRING = { type: "spring" as const, duration: 0.22, bounce: 0 };
 const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
 const NAV_SCROLL_SPRING = { stiffness: 120, damping: 26, mass: 0.9 };
 
-// 16 bold square-block columns for GPU-composited stepped pixel-crawl theme transition
-const PIXEL_STEP_OFFSETS = [6, 18, 10, 26, 4, 22, 14, 28, 8, 20, 12, 24, 6, 18, 10, 22];
-
-function buildPixelCrawlPolygon(baseY: number): string {
-  const cols = PIXEL_STEP_OFFSETS.length;
-  const points: string[] = [];
-  for (let i = 0; i < cols; i++) {
-    const x0 = ((i / cols) * 100).toFixed(2);
-    const x1 = (((i + 1) / cols) * 100).toFixed(2);
-    const y = (baseY + PIXEL_STEP_OFFSETS[i]).toFixed(2);
-    points.push(`${x0}% ${y}%`, `${x1}% ${y}%`);
-  }
-  points.push("100% 100%", "0% 100%");
-  return `polygon(${points.join(", ")})`;
-}
-
-const PIXEL_CRAWL_START = buildPixelCrawlPolygon(100);
-const PIXEL_CRAWL_END = buildPixelCrawlPolygon(-28);
-
 function subscribeTheme(onStoreChange: () => void) {
   window.addEventListener("theme-change", onStoreChange);
   window.addEventListener("storage", onStoreChange);
@@ -173,34 +157,7 @@ export function Navbar() {
       window.dispatchEvent(new Event("theme-change"));
     };
 
-    const doc = document as Document & {
-      startViewTransition?: (cb: () => void) => { ready: Promise<void> };
-    };
-
-    if (shouldReduceMotion || !doc.startViewTransition) {
-      apply();
-      return;
-    }
-
-    const transition = doc.startViewTransition(() => {
-      apply();
-    });
-
-    // 100% GPU-composited stepped pixel-block crawl (bottom -> top, zero mask re-raster lag)
-    transition.ready
-      .then(() => {
-        document.documentElement.animate(
-          [{ clipPath: PIXEL_CRAWL_START }, { clipPath: PIXEL_CRAWL_END }],
-          {
-            duration: 740,
-            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-            pseudoElement: "::view-transition-new(root)",
-          },
-        );
-      })
-      .catch(() => {
-        // Fallback already applied if view transition is skipped
-      });
+    runPixelThemeTransition(next, apply, Boolean(shouldReduceMotion));
   };
 
   const openPalette = useCallback(() => {
@@ -231,6 +188,24 @@ export function Navbar() {
   const flatFiltered = grouped.flatMap((section) => section.items);
   const indexById = new Map(flatFiltered.map((item, idx) => [item.id, idx]));
 
+  const [copiedCmd, setCopiedCmd] = useState<{
+    title: string;
+    detail: string;
+  } | null>(null);
+  const copyToastTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyToastTimerRef.current) window.clearTimeout(copyToastTimerRef.current);
+    };
+  }, []);
+
+  const showCopyToast = (title: string, detail: string) => {
+    setCopiedCmd({ title, detail });
+    if (copyToastTimerRef.current) window.clearTimeout(copyToastTimerRef.current);
+    copyToastTimerRef.current = window.setTimeout(() => setCopiedCmd(null), 2200);
+  };
+
   const runCommand = (item: CommandItem) => {
     setPaletteOpen(false);
     if (item.action === "toggle-theme") {
@@ -238,11 +213,17 @@ export function Navbar() {
       return;
     }
     if (item.action === "copy-email") {
-      navigator.clipboard?.writeText(PROFILE.email).catch(() => { });
+      navigator.clipboard
+        ?.writeText(PROFILE.email)
+        .then(() => showCopyToast("Email copied", PROFILE.email))
+        .catch(() => {});
       return;
     }
     if (item.action === "copy-discord") {
-      navigator.clipboard?.writeText(PROFILE.socials.discord).catch(() => { });
+      navigator.clipboard
+        ?.writeText(PROFILE.socials.discord)
+        .then(() => showCopyToast("Discord copied", `@${PROFILE.socials.discord}`))
+        .catch(() => {});
       return;
     }
     if (!item.href) return;
@@ -283,11 +264,13 @@ export function Navbar() {
     if (!paletteOpen) return;
     const focusTimer = window.setTimeout(() => inputRef.current?.focus(), 20);
 
+    setSmoothScrollPaused(true);
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       window.clearTimeout(focusTimer);
       document.body.style.overflow = prevOverflow;
+      setSmoothScrollPaused(false);
     };
   }, [paletteOpen]);
 
@@ -310,11 +293,32 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-bg">
-        {/* Full-strength interlocking engraving so navbar takes visual priority over section dividers */}
-        <InterlockingPattern />
+      <header className="sticky top-0 z-50 w-full bg-bg">
+        {/* Full-strength interlocking engraving fades in smoothly on page load */}
+        <motion.div
+          aria-hidden="true"
+          initial={
+            shouldReduceMotion
+              ? false
+              : { opacity: 0, clipPath: "inset(0% 25% 0% 25%)" }
+          }
+          animate={{ opacity: 1, clipPath: "inset(0% 0% 0% 0%)" }}
+          transition={{ duration: 0.72, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
+          className="pointer-events-none absolute inset-0"
+        >
+          <InterlockingPattern />
+        </motion.div>
 
-        <div className="relative mx-auto flex h-16 max-w-5xl items-center justify-between border-x border-border px-6">
+        {/* Bottom hairline rule drawing outward from center */}
+        <motion.span
+          aria-hidden="true"
+          initial={shouldReduceMotion ? false : { scaleX: 0, opacity: 0 }}
+          animate={{ scaleX: 1, opacity: 1 }}
+          transition={{ duration: 0.56, ease: [0.22, 1, 0.36, 1] }}
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-px origin-center bg-border"
+        />
+
+        <div className="rail-reveal relative mx-auto flex h-16 max-w-5xl items-center justify-between border-x border-border px-6">
           {/* Scroll-linked center-anchored bg curtain: smoothly shrinks inward as you scroll so shapes take over from both rails */}
           <motion.div
             aria-hidden="true"
@@ -343,14 +347,25 @@ export function Navbar() {
               scrolled ? "pointer-events-none" : ""
             }`}
           >
-            <Image
-              src="/logos/brand-sd.svg"
-              alt={PROFILE.name}
-              width={44}
-              height={22}
-              priority
-              className="github-app-icon h-[22px] w-auto object-contain"
-            />
+            <motion.span
+              initial={
+                shouldReduceMotion
+                  ? false
+                  : { opacity: 0, y: -10, filter: "blur(4px)" }
+              }
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.48, delay: 0, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex items-center"
+            >
+              <Image
+                src="/logos/brand-sd.svg"
+                alt={PROFILE.name}
+                width={44}
+                height={22}
+                priority
+                className="github-app-icon h-[22px] w-auto object-contain"
+              />
+            </motion.span>
           </motion.a>
 
           {/* Centered SD mark when scrolled — solid bg island + soft edge feathers keep sweeping shapes clear of logo */}
@@ -394,12 +409,22 @@ export function Navbar() {
           </motion.div>
 
           <motion.div
+            initial={
+              shouldReduceMotion
+                ? false
+                : { opacity: 0, y: -10, scale: 0.96, filter: "blur(4px)" }
+            }
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            transition={{ duration: 0.5, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
+            className="relative z-10 shrink-0"
+          >
+          <motion.div
             style={
               shouldReduceMotion
                 ? { opacity: scrolled ? 0 : 1 }
                 : { opacity: edgeOpacity, y: edgeY, scale: edgeScale }
             }
-            className={`relative z-10 inline-flex shrink-0 items-center gap-1 rounded-xl bg-surface p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.2),0_2px_6px_rgba(0,0,0,0.14)] will-change-transform ${
+            className={`tactile-dock shrink-0 will-change-transform ${
               scrolled ? "pointer-events-none" : ""
             }`}
           >
@@ -458,7 +483,7 @@ export function Navbar() {
               onMouseEnter={() => searchRef.current?.startAnimation()}
               onMouseLeave={() => searchRef.current?.stopAnimation()}
               aria-label="Open command search"
-              className="pressable inline-flex h-8 cursor-pointer items-center gap-2.5 rounded-lg bg-bg px-3 text-xs font-medium text-text shadow-[inset_0_1px_2px_rgba(0,0,0,0.16)]"
+              className="pressable tactile-key h-8 gap-2.5 px-3 py-0"
             >
               <SearchIcon ref={searchRef} size={14} className="text-text-secondary" />
               <span className="hidden sm:inline">Search</span>
@@ -466,6 +491,8 @@ export function Navbar() {
                 ⌘K
               </kbd>
             </button>
+
+            <HeartLikeButton />
 
             <a
               href={PROFILE.socials.github}
@@ -477,22 +504,33 @@ export function Navbar() {
               <FaGithub className="h-[18px] w-[18px]" />
             </a>
           </motion.div>
+          </motion.div>
 
           {/* Rail-joint crosshairs matching SectionDivider */}
-          <span
+          <motion.span
             aria-hidden="true"
+            initial={
+              shouldReduceMotion ? false : { opacity: 0, scale: 0.3, rotate: -45 }
+            }
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="pointer-events-none absolute -bottom-px -left-px z-10 flex h-2.5 w-2.5 -translate-x-1/2 translate-y-1/2 items-center justify-center"
           >
             <span className="absolute h-px w-full bg-border-strong" />
             <span className="absolute h-full w-px bg-border-strong" />
-          </span>
-          <span
+          </motion.span>
+          <motion.span
             aria-hidden="true"
+            initial={
+              shouldReduceMotion ? false : { opacity: 0, scale: 0.3, rotate: -45 }
+            }
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="pointer-events-none absolute -bottom-px -right-px z-10 flex h-2.5 w-2.5 translate-x-1/2 translate-y-1/2 items-center justify-center"
           >
             <span className="absolute h-px w-full bg-border-strong" />
             <span className="absolute h-full w-px bg-border-strong" />
-          </span>
+          </motion.span>
         </div>
       </header>
 
@@ -500,13 +538,13 @@ export function Navbar() {
       <AnimatePresence>
         {paletteOpen && (
           <motion.div
+            key="cmd-palette"
             role="dialog"
             aria-modal="true"
             aria-label="Command palette"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18, ease: EASE_OUT }}
+            animate={{ opacity: 1, transition: { duration: 0.24, ease: EASE_OUT } }}
+            exit={{ opacity: 0, transition: { duration: 0.26, ease: EASE_OUT } }}
             onClick={() => setPaletteOpen(false)}
             className="fixed inset-0 z-[60] flex items-center justify-center bg-bg/75 px-4 backdrop-blur-sm"
           >
@@ -515,28 +553,33 @@ export function Navbar() {
               initial={
                 shouldReduceMotion
                   ? { opacity: 0 }
-                  : {
-                    opacity: 0,
-                    transform: "scale(0.96) translateY(8px)",
-                  }
+                  : { opacity: 0, scale: 0.94, y: 14 }
               }
               animate={
                 shouldReduceMotion
-                  ? { opacity: 1 }
+                  ? { opacity: 1, transition: { duration: 0.14 } }
                   : {
-                    opacity: 1,
-                    transform: "scale(1) translateY(0px)",
-                  }
+                      opacity: 1,
+                      scale: 1,
+                      y: 0,
+                      transition: {
+                        type: "spring",
+                        stiffness: 360,
+                        damping: 28,
+                        mass: 0.85,
+                      },
+                    }
               }
               exit={
                 shouldReduceMotion
-                  ? { opacity: 0 }
+                  ? { opacity: 0, transition: { duration: 0.14 } }
                   : {
-                    opacity: 0,
-                    transform: "scale(0.97) translateY(4px)",
-                  }
+                      opacity: 0,
+                      scale: 0.95,
+                      y: 10,
+                      transition: { duration: 0.2, ease: EASE_OUT },
+                    }
               }
-              transition={{ duration: 0.2, ease: EASE_OUT }}
               className="w-full max-w-xl overflow-hidden rounded-2xl bg-surface shadow-[0_0_0_1px_rgba(128,128,136,0.12),0_28px_80px_rgba(0,0,0,0.55)]"
             >
               <div className="flex items-center gap-3 px-5 pb-3 pt-4">
@@ -558,7 +601,10 @@ export function Navbar() {
                 </kbd>
               </div>
 
-              <div className="no-scrollbar max-h-96 overflow-y-auto overscroll-contain p-2">
+              <div
+                data-lenis-prevent
+                className="no-scrollbar max-h-96 overflow-y-auto overscroll-contain p-2"
+              >
                 {grouped.length === 0 ? (
                   <div className="flex flex-col items-center justify-center gap-3 px-4 py-10 text-center">
                     <Image
@@ -583,7 +629,7 @@ export function Navbar() {
                         <p className="px-3 pb-1.5 pt-1 font-mono text-[10px] uppercase tracking-wider text-text-muted">
                           {section.group}
                         </p>
-                        <ul className="flex flex-col gap-0.5">
+                        <ul className="relative isolate flex flex-col gap-0.5">
                           {section.items.map((item) => {
                             const itemIndex = indexById.get(item.id) ?? 0;
                             const isSelected = itemIndex === selectedIndex;
@@ -611,7 +657,7 @@ export function Navbar() {
                                           ? { duration: 0.1 }
                                           : GLIDE_SPRING
                                       }
-                                      className="absolute inset-0 -z-10 rounded-[6px] bg-surface-hover"
+                                      className="pointer-events-none absolute inset-0 z-0 rounded-[6px] bg-surface-hover"
                                     />
                                   )}
                                   <span className="relative z-10">
@@ -659,6 +705,12 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <CopyToast
+        open={copiedCmd !== null}
+        title={copiedCmd?.title ?? ""}
+        detail={copiedCmd?.detail ?? ""}
+      />
     </>
   );
 }

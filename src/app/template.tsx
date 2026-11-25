@@ -1,26 +1,28 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 
 const ROUTE_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 /**
- * Per-navigation route arrival wrapper for /, /resume, and 404.
- * Runs pure GPU opacity + subtle translateY without forcing page files into Client Components.
+ * Per-navigation arrival for subpages (/resume, 404).
+ * Home (/) skips the outer fade so Hero's opening choreography plays at full contrast from frame 0.
  */
 export default function Template({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const shouldReduceMotion = useReducedMotion();
 
-  if (shouldReduceMotion) {
+  if (shouldReduceMotion || pathname === "/") {
     return <>{children}</>;
   }
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.22, ease: ROUTE_EASE }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.36, ease: ROUTE_EASE }}
     >
       {children}
     </motion.div>

@@ -8,6 +8,12 @@ export function registerLenis(instance: Lenis | null) {
   lenisInstance = instance;
 }
 
+export function setSmoothScrollPaused(paused: boolean) {
+  if (!lenisInstance) return;
+  if (paused) lenisInstance.stop();
+  else lenisInstance.start();
+}
+
 function resolveTargetY(href: string): number {
   if (href === "#top") return 0;
   const el = document.querySelector(href);

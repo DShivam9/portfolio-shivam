@@ -1,14 +1,42 @@
-import { useId } from "react";
+"use client";
 
-function Crosshair({ className }: { className: string }) {
+import { useId } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+
+const ARCHITECT_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+function Crosshair({
+  className,
+  reduceMotion,
+}: {
+  className: string;
+  reduceMotion: boolean;
+}) {
   return (
-    <span
+    <motion.span
       aria-hidden="true"
+      variants={
+        reduceMotion
+          ? { hidden: { opacity: 1 }, visible: { opacity: 1 } }
+          : {
+            hidden: { opacity: 0, scale: 0.3, rotate: -45 },
+            visible: {
+              opacity: 1,
+              scale: 1,
+              rotate: 0,
+              transition: {
+                duration: 0.48,
+                delay: 0.24,
+                ease: ARCHITECT_EASE,
+              },
+            },
+          }
+      }
       className={`pointer-events-none absolute z-10 flex h-2.5 w-2.5 items-center justify-center ${className}`}
     >
       <span className="absolute h-px w-full bg-border-strong" />
       <span className="absolute h-full w-px bg-border-strong" />
-    </span>
+    </motion.span>
   );
 }
 
@@ -56,18 +84,96 @@ export function InterlockingPattern({ className = "" }: { className?: string }) 
 }
 
 export function SectionDivider() {
+  const shouldReduceMotion = Boolean(useReducedMotion());
+
   return (
-    <div
+    <motion.div
       aria-hidden="true"
-      className="relative w-full border-y border-border bg-bg"
+      initial={shouldReduceMotion ? "visible" : "hidden"}
+      whileInView="visible"
+      viewport={{ once: true, amount: "some" }}
+      className="relative w-full bg-bg"
     >
-      <div className="relative mx-auto h-9 max-w-5xl border-x border-border">
-        <InterlockingPattern className="opacity-60" />
-        <Crosshair className="-left-px -top-px -translate-x-1/2 -translate-y-1/2" />
-        <Crosshair className="-right-px -top-px translate-x-1/2 -translate-y-1/2" />
-        <Crosshair className="-bottom-px -left-px -translate-x-1/2 translate-y-1/2" />
-        <Crosshair className="-bottom-px -right-px translate-x-1/2 translate-y-1/2" />
+      {/* Top & bottom hairline rules drawing outward from center */}
+      <motion.span
+        variants={
+          shouldReduceMotion
+            ? { hidden: { scaleX: 1 }, visible: { scaleX: 1 } }
+            : {
+              hidden: { scaleX: 0, opacity: 0 },
+              visible: {
+                scaleX: 1,
+                opacity: 1,
+                transition: { duration: 0.72, ease: ARCHITECT_EASE },
+              },
+            }
+        }
+        className="pointer-events-none absolute inset-x-0 top-0 h-px origin-center bg-border"
+      />
+      <motion.span
+        variants={
+          shouldReduceMotion
+            ? { hidden: { scaleX: 1 }, visible: { scaleX: 1 } }
+            : {
+              hidden: { scaleX: 0, opacity: 0 },
+              visible: {
+                scaleX: 1,
+                opacity: 1,
+                transition: {
+                  duration: 0.72,
+                  delay: 0.06,
+                  ease: ARCHITECT_EASE,
+                },
+              },
+            }
+        }
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-center bg-border"
+      />
+
+      <div className="rail-reveal relative mx-auto h-9 max-w-5xl border-x border-border">
+        {/* Interlocking geometric pattern unfurling from center to both rails */}
+        <motion.div
+          variants={
+            shouldReduceMotion
+              ? { hidden: { opacity: 0.6 }, visible: { opacity: 0.6 } }
+              : {
+                hidden: {
+                  clipPath: "inset(0% 50% 0% 50%)",
+                  opacity: 0,
+                },
+                visible: {
+                  clipPath: "inset(0% 0% 0% 0%)",
+                  opacity: 0.6,
+                  transition: {
+                    duration: 0.85,
+                    delay: 0.12,
+                    ease: ARCHITECT_EASE,
+                  },
+                },
+              }
+          }
+          className="pointer-events-none absolute inset-0"
+        >
+          <InterlockingPattern />
+        </motion.div>
+
+        <Crosshair
+          reduceMotion={shouldReduceMotion}
+          className="-left-px -top-px -translate-x-1/2 -translate-y-1/2"
+        />
+        <Crosshair
+          reduceMotion={shouldReduceMotion}
+          className="-right-px -top-px translate-x-1/2 -translate-y-1/2"
+        />
+        <Crosshair
+          reduceMotion={shouldReduceMotion}
+          className="-bottom-px -left-px -translate-x-1/2 translate-y-1/2"
+        />
+        <Crosshair
+          reduceMotion={shouldReduceMotion}
+          className="-bottom-px -right-px translate-x-1/2 translate-y-1/2"
+        />
       </div>
-    </div>
+    </motion.div>
   );
 }

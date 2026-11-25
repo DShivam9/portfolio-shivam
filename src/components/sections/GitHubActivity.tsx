@@ -100,7 +100,7 @@ async function fetchContributions(): Promise<GitHubContributionsResponse | null>
 export function GitHubActivitySkeleton() {
   return (
     <section aria-label="GitHub activity loading" className="w-full">
-      <div className="mx-auto max-w-5xl border-x border-border px-6 py-10 sm:px-7 sm:py-12">
+      <div className="section-shell px-6 py-10 sm:px-7 sm:py-12">
         <div className="h-[168px] w-full animate-pulse rounded-[4px] bg-surface" />
         <div className="mt-4 flex items-center justify-between">
           <div className="h-4 w-56 animate-pulse rounded bg-surface" />
@@ -126,7 +126,7 @@ export async function GitHubActivity() {
       aria-label="GitHub contributions"
       className="w-full scroll-mt-16"
     >
-      <div className="mx-auto max-w-5xl border-x border-border">
+      <div className="section-shell">
         {data ? (
           <ContributionGraph
             contributions={data.contributions}
